@@ -2,14 +2,14 @@
 #include<criterion/criterion.h>
 #include<criterion/assert.h>
 
-#include "utils/string_view.h"
+#include "vendor/string-view.h"
 #include "lexing.h"
 
 void check_for_equal_tokens(token_t expected, token_t actual) {
   cr_expect(
-    strview_equals(expected.lexeme, actual.lexeme),
-    "Expected lexeme \"" STRVIEW_Fmt "\", got \"" STRVIEW_Fmt "\".",
-    STRVIEW_Arg(expected.lexeme), STRVIEW_Arg(actual.lexeme)
+    str_view_equals(expected.lexeme, actual.lexeme),
+    "Expected lexeme \"" str_view_FMT "\", got \"" str_view_FMT "\".",
+    str_view_ARG(expected.lexeme), str_view_ARG(actual.lexeme)
   );
 
   cr_expect(expected.line == actual.line,
@@ -62,10 +62,10 @@ void check_for_equal_tokens(token_t expected, token_t actual) {
         );
         break;
       case TSTR:
-        cr_expect(strview_equals(expected.literal.data.as_str, actual.literal.data.as_str),
-                  "Expected a literal value of \"" STRVIEW_Fmt "\", got \"" STRVIEW_Fmt "\".",
-                  STRVIEW_Arg(expected.literal.data.as_str),
-                  STRVIEW_Arg(actual.literal.data.as_str)
+        cr_expect(str_view_equals(expected.literal.data.as_str, actual.literal.data.as_str),
+                  "Expected a literal value of \"" str_view_FMT "\", got \"" str_view_FMT "\".",
+                  str_view_ARG(expected.literal.data.as_str),
+                  str_view_ARG(actual.literal.data.as_str)
         );
         break;
       case TBOOL:
@@ -90,52 +90,52 @@ Test(lexer_testing, source_code1) {
   token_t expected_tokens[] = {
     (token_t) {
       .token_type = TOKEN_FUNC,
-      .lexeme = strview_from("func"),
+      .lexeme = str_view_from("func"),
       .line = 1,
     },
     (token_t) {
       .token_type = TOKEN_ID,
-      .lexeme = strview_from("main"),
+      .lexeme = str_view_from("main"),
       .line = 1,
     },
     (token_t) {
       .token_type = TOKEN_LPAREN,
-      .lexeme = strview_from("("),
+      .lexeme = str_view_from("("),
       .line = 1,
     },
     (token_t) {
       .token_type = TOKEN_RPAREN,
-      .lexeme = strview_from(")"),
+      .lexeme = str_view_from(")"),
       .line = 1,
     },
     (token_t) {
       .token_type = TOKEN_LBRACE,
-      .lexeme = strview_from("{"),
+      .lexeme = str_view_from("{"),
       .line = 1,
     },
     (token_t) {
       .token_type = TOKEN_ID,
-      .lexeme = strview_from("x"),
+      .lexeme = str_view_from("x"),
       .line = 2,
     },
     (token_t) {
       .token_type = TOKEN_COLON,
-      .lexeme = strview_from(":"),
+      .lexeme = str_view_from(":"),
       .line = 2,
     },
     (token_t) {
       .token_type = TOKEN_ID,
-      .lexeme = strview_from("int"),
+      .lexeme = str_view_from("int"),
       .line = 2,
     },
     (token_t) {
       .token_type = TOKEN_EQUAL,
-      .lexeme = strview_from("="),
+      .lexeme = str_view_from("="),
       .line = 2,
     },
     (token_t) {
       .token_type = TOKEN_NUM,
-      .lexeme = strview_from("2"),
+      .lexeme = str_view_from("2"),
       .literal = {
         .data = { .as_int = 2 },
         .type = TINT,
@@ -144,12 +144,12 @@ Test(lexer_testing, source_code1) {
     },
     (token_t) {
       .token_type = TOKEN_PLUS,
-      .lexeme = strview_from("+"),
+      .lexeme = str_view_from("+"),
       .line = 2,
     },
     (token_t) {
       .token_type = TOKEN_NUM,
-      .lexeme = strview_from("3"),
+      .lexeme = str_view_from("3"),
       .literal = {
         .data = { .as_int = 3 },
         .type = TINT,
@@ -158,17 +158,17 @@ Test(lexer_testing, source_code1) {
     },
     (token_t) {
       .token_type = TOKEN_SEMICOLON,
-      .lexeme = strview_from(";"),
+      .lexeme = str_view_from(";"),
       .line = 2,
     },
     (token_t) {
       .token_type = TOKEN_RBRACE,
-      .lexeme = strview_from("}"),
+      .lexeme = str_view_from("}"),
       .line = 3,
     },
     (token_t) {
       .token_type = TOKEN_EOF,
-      .lexeme = strview_from(""),
+      .lexeme = str_view_from(""),
       .line = 3,
     }
   };
