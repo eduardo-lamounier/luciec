@@ -1,5 +1,5 @@
 /* Library copied from the repository: https://github.com/eduardo-lamounier/c-utils
- * Code at the commit a7c6c81 [branch main].
+ * Code at the commit b459547 [branch main].
  *
  * Updating the code requires manually copying the file from this repository
  * into here.
@@ -73,6 +73,10 @@ double str_view_todouble(string_view_t view);
 // Checks whether the content of two string views are the same - in this case
 // returning `true`, otherwise `false`.
 bool str_view_equals(string_view_t view1, string_view_t view2);
+
+// Checks whether the content of a string view and a null-terminated string
+// are the same - in this case returning `true`, otherwise `false`.
+bool str_view_equals_cstr(string_view_t view, const char *cstr);
 
 
 #endif
@@ -171,5 +175,11 @@ bool str_view_equals(string_view_t view1, string_view_t view2) {
   return strncmp(view1.data, view2.data, view1.length) == 0;
 }
 
+bool str_view_equals_cstr(string_view_t view, const char *cstr) {
+  if(view.length != strlen(cstr))
+    return false;
+
+  return strncmp(view.data, cstr, view.length) == 0;
+}
 
 #endif

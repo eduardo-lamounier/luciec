@@ -156,34 +156,34 @@ static bool check_for_number_literal(token_t *const token, char current_chr,
 //
 // A string view to the token's lexeme must be specified.
 static bool check_for_keywords(token_t *const token, string_view_t lexeme_view) {
-  if (str_view_equals(lexeme_view, "null")) {
+  if (str_view_equals_cstr(lexeme_view, "null")) {
     token->token_type = TOKEN_NULL; return true;
   }
-  if (str_view_equals(lexeme_view, "false")) {
+  if (str_view_equals_cstr(lexeme_view, "false")) {
     token->token_type = TOKEN_FALSE; return true;
   }
-  if (str_view_equals(lexeme_view, "true")) {
+  if (str_view_equals_cstr(lexeme_view, "true")) {
     token->token_type = TOKEN_TRUE; return true;
   }
-  if (str_view_equals(lexeme_view, "if")) {
+  if (str_view_equals_cstr(lexeme_view, "if")) {
     token->token_type = TOKEN_IF; return true;
   }
-  if (str_view_equals(lexeme_view, "else")) {
+  if (str_view_equals_cstr(lexeme_view, "else")) {
     token->token_type = TOKEN_ELSE; return true;
   }
-  if (str_view_equals(lexeme_view, "while")) {
+  if (str_view_equals_cstr(lexeme_view, "while")) {
     token->token_type = TOKEN_WHILE; return true;
   }
-  if (str_view_equals(lexeme_view, "for")) {
+  if (str_view_equals_cstr(lexeme_view, "for")) {
     token->token_type = TOKEN_FOR; return true;
   }
-  if (str_view_equals(lexeme_view, "func")) {
+  if (str_view_equals_cstr(lexeme_view, "func")) {
     token->token_type = TOKEN_FUNC; return true;
   }
-  if (str_view_equals(lexeme_view, "return")) {
+  if (str_view_equals_cstr(lexeme_view, "return")) {
     token->token_type = TOKEN_RETURN; return true;
   }
-  if (str_view_equals(lexeme_view, "using")) {
+  if (str_view_equals_cstr(lexeme_view, "using")) {
     token->token_type = TOKEN_USING; return true;
   }
 
