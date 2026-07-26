@@ -20,7 +20,6 @@ add_executable( luciec
   src/luciec.c
   src/lexing.c
   src/logging.c
-  src/utils/string_view.c
 )
 
 target_include_directories( luciec PRIVATE
@@ -36,7 +35,6 @@ target_compile_options( luciec PRIVATE
 # Testing
 
 add_executable( tests
-  src/utils/string_view.c
   src/logging.c
   src/lexing.c
   tests/testing.c

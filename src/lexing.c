@@ -1,9 +1,9 @@
-#include "lexing.h"
-
-#include "logging.h"
-#include "utils/string_view.h"
+#include<string.h>
 #include <ctype.h>
 #include <stdlib.h>
+
+#include "lexing.h"
+#include "logging.h"
 
 typedef struct {
   bool had_errors;
@@ -102,7 +102,7 @@ static bool check_for_string_literal(token_t *const token, const char *lexeme,
   token->literal = (value_t){
       .type = TSTR,
       .data.as_str =
-          strview_new(lexeme + 1, lexer->current - lexeme_start + 1 - 2),
+          str_view_new(lexeme + 1, lexer->current - lexeme_start + 1 - 2),
   };
   advance(lexer);
   return true;
@@ -132,17 +132,17 @@ static bool check_for_number_literal(token_t *const token, char current_chr,
     for (; isdigit(peek(lexer)); advance(lexer));
   }
 
-  string_view_t lexeme_view = strview_new(lexeme, lexer->current - lexeme_start);
+  string_view_t lexeme_view = str_view_new(lexeme, lexer->current - lexeme_start);
 
   if (is_number_decimal)
     token->literal = (value_t){
         .type = TDOUBLE,
-        .data = {.as_double = strview_todouble(lexeme_view)},
+        .data = {.as_double = str_view_todouble(lexeme_view)},
     };
   else
     token->literal = (value_t){
         .type = TINT,
-        .data = {.as_int = strview_toint(lexeme_view)},
+        .data = {.as_int = str_view_toint(lexeme_view)},
     };
 
   return true;
@@ -156,34 +156,34 @@ static bool check_for_number_literal(token_t *const token, char current_chr,
 //
 // A string view to the token's lexeme must be specified.
 static bool check_for_keywords(token_t *const token, string_view_t lexeme_view) {
-  if (strview_equals(lexeme_view, "null")) {
+  if (str_view_equals(lexeme_view, "null")) {
     token->token_type = TOKEN_NULL; return true;
   }
-  if (strview_equals(lexeme_view, "false")) {
+  if (str_view_equals(lexeme_view, "false")) {
     token->token_type = TOKEN_FALSE; return true;
   }
-  if (strview_equals(lexeme_view, "true")) {
+  if (str_view_equals(lexeme_view, "true")) {
     token->token_type = TOKEN_TRUE; return true;
   }
-  if (strview_equals(lexeme_view, "if")) {
+  if (str_view_equals(lexeme_view, "if")) {
     token->token_type = TOKEN_IF; return true;
   }
-  if (strview_equals(lexeme_view, "else")) {
+  if (str_view_equals(lexeme_view, "else")) {
     token->token_type = TOKEN_ELSE; return true;
   }
-  if (strview_equals(lexeme_view, "while")) {
+  if (str_view_equals(lexeme_view, "while")) {
     token->token_type = TOKEN_WHILE; return true;
   }
-  if (strview_equals(lexeme_view, "for")) {
+  if (str_view_equals(lexeme_view, "for")) {
     token->token_type = TOKEN_FOR; return true;
   }
-  if (strview_equals(lexeme_view, "func")) {
+  if (str_view_equals(lexeme_view, "func")) {
     token->token_type = TOKEN_FUNC; return true;
   }
-  if (strview_equals(lexeme_view, "return")) {
+  if (str_view_equals(lexeme_view, "return")) {
     token->token_type = TOKEN_RETURN; return true;
   }
-  if (strview_equals(lexeme_view, "using")) {
+  if (str_view_equals(lexeme_view, "using")) {
     token->token_type = TOKEN_USING; return true;
   }
 
@@ -297,14 +297,14 @@ static void scan_token(lexer_t *const lexer, token_t *const token_out) {
 
       if(check_for_keywords(
         &token, 
-        strview_new(lexeme, lexer->current - start))
+        str_view_new(lexeme, lexer->current - start))
       )
         break;
 
       // If the lexeme doesn't match with any keyword, it's an indentifier
   }
 
-  token.lexeme = strview_new(lexeme, lexer->current - start);
+  token.lexeme = str_view_new(lexeme, lexer->current - start);
   *token_out = token;
 }
 
@@ -396,7 +396,7 @@ tokenized_source_t tokenize_source(const char *const source, const size_t source
 
   token_t EOF_token = {
     .token_type = TOKEN_EOF,
-    .lexeme = strview_from(""),
+    .lexeme = str_view_from(""),
     .line = lexer.current_line
   };
 

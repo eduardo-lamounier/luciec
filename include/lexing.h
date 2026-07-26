@@ -1,12 +1,9 @@
 #ifndef LEXING_H
 #define LEXING_H
 
-#include<stdio.h>
 #include<stdlib.h>
-#include<stdbool.h>
-#include<string.h>
 
-#include "utils/string_view.h"
+#include "vendor/string-view.h"
 
 #define LIST_TOKEN_TYPES                                                       \
   X(TOKEN_LPAREN) X(TOKEN_RPAREN)                                              \
