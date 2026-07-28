@@ -1,8 +1,6 @@
-#include<stdio.h>
 #include<criterion/criterion.h>
 #include<criterion/assert.h>
 
-#include "vendor/string-view.h"
 #include "lexing.h"
 
 void check_for_equal_tokens(token_t expected, token_t actual) {
