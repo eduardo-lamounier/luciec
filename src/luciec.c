@@ -4,8 +4,6 @@
 #include<string.h>
 #include<assert.h>
 
-#define STRING_VIEW_IMPLEMENTATION
-
 #include "logging.h"
 #include "lexing.h"
 

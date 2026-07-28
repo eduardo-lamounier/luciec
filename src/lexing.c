@@ -1,8 +1,10 @@
+#define STRING_VIEW_IMPLEMENTATION
+#include "lexing.h"
+
 #include<string.h>
 #include <ctype.h>
 #include <stdlib.h>
 
-#include "lexing.h"
 #include "logging.h"
 
 typedef struct {
