@@ -9,6 +9,16 @@
 
 #define DEFAULT_OUTPUT_PATH "a.out"
 
+#define VERSION_MESSAGE "luciec 1.0.0v"
+#define HELP_MESSAGE "Usage: luciec [OPTIONS] file...\n"                       \
+  "\n[--help | -H]: Show this reference."                                      \
+  "\n[--version | -V]: Shows the version of luciec installed in your system."  \
+  "\n[--output | -O]: Specifies path for the output executable"                \
+  ""
+
+#define NO_SOURCE_FILE_MESSAGE "No source file passed to compile."
+#define HAD_ERRORS_MESSAGE "The compilation failed."
+
 // Options passed to the compiler
 typedef struct {
   const char *source_filepath;
@@ -19,8 +29,8 @@ typedef struct {
 
 // Parses the arguments passed to the compiler
 //
-// args MUST contain the input file's path
-// as its first parameter
+// The first argument of the program (the executable's path) should NOT be
+// included.
 //
 // This function throws an error using 'throw_error'
 // in case of something unexpected when parsing
@@ -29,24 +39,16 @@ options_t parse_compiler_opts(char **const args, int n) {
   
   // Default options
   options_t options = {
-    .source_filepath = args[0],
+    .source_filepath = NULL,
     .output_filepath = NULL, // defaults to DEFAULT_OUTPUT_PATH if NULL
     .show_version = false,
     .show_help = false
   };
-  
-  if(strlen(options.source_filepath) <= strlen(".lucie") ||
-    strcmp(
-      options.source_filepath + strlen(options.source_filepath) - strlen(".lucie"), 
-      ".lucie"
-    ) != 0)
-      throw_error("The input isn't a .lucie file.");
 
+  bool waiting_for_sourcefile = true;
   bool waiting_for_outputfile = false;
 
-  for(int i = 1; i < n; i++) {
-    // Other arguments passed to the compiler
-    
+  for(int i = 0; i < n; i++) {   
     // Check for flags:
     
     if(strcmp(args[i], "--help") == 0 || strcmp(args[i], "-H") == 0) {
@@ -73,15 +75,31 @@ options_t parse_compiler_opts(char **const args, int n) {
     }
 
     // Check for arguments:
-
+    
     if(waiting_for_outputfile) {
       options.output_filepath = args[i];
       waiting_for_outputfile = false;
-    } else {
-      snprintf(log_msg_buff, LOG_MESSAGE_BUFFER_SIZE, "Unexpected argument '%s'.", args[i]);
-      throw_error(log_msg_buff);
+      continue;
     }
+
+    if(waiting_for_sourcefile) {
+      options.source_filepath = args[i];
+      waiting_for_sourcefile = false;
+      continue;
+    }
+
+    snprintf(log_msg_buff, LOG_MESSAGE_BUFFER_SIZE, "Unexpected argument '%s'.", args[i]);
+    throw_error(log_msg_buff);
   }
+
+  if(options.source_filepath != NULL && (
+    strlen(options.source_filepath) <= strlen(".lucie") ||
+    strcmp(
+      options.source_filepath + strlen(options.source_filepath) - strlen(".lucie"), 
+      ".lucie"
+    ) != 0)
+  )
+      throw_error("The input isn't a .lucie file.");
 
   if(waiting_for_outputfile)
     throw_error("Output file wasn't specified.");
@@ -118,9 +136,22 @@ char *read_source(FILE *source_file, long *const size_out) {
 
 int main(int argc, char **argv) {
   if(argc == 1)
-    throw_error("No .lucie source code passed to compile.");
+    throw_error(NO_SOURCE_FILE_MESSAGE);
 
   options_t opts = parse_compiler_opts(argv + 1, argc - 1);
+
+  if(opts.show_version) {
+    puts(VERSION_MESSAGE); return EXIT_SUCCESS;
+  }
+
+  if(opts.show_help) {
+    puts(HELP_MESSAGE); return EXIT_SUCCESS;
+  }
+  
+  // No option that would made the program terminate was passed, so we need the
+  // source file to compile:
+  if(opts.source_filepath == NULL)
+    throw_error(NO_SOURCE_FILE_MESSAGE);
 
   FILE *source_file = fopen(opts.source_filepath, "rb");
 
@@ -140,8 +171,7 @@ int main(int argc, char **argv) {
   tokenized_source_t tokenized_source = tokenize_source(source, source_size);
  
   if(tokenized_source.had_errors) {
-    puts("The compilation failed.");
-    return EXIT_FAILURE;
+    puts(HAD_ERRORS_MESSAGE); return EXIT_FAILURE;
   }
   
   // Parsing
