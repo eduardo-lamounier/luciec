@@ -14,12 +14,22 @@ if(NOT CRITERION_INCLUDE_DIR OR NOT CRITERION_LIBRARY)
   message(FATAL_ERROR "Criterion is not installed in your system.")
 endif()
 
+
+if(WIN32)
+  set(PLATFORM_SOURCES src/platform_win.c)
+elseif(UNIX)
+  set(PLATFORM_SOURCES src/platform_unix.c)
+else()
+  message(FATAL_ERROR "Your platform is not supported.")
+endif()
+
 # Main application
 
 add_executable( luciec
   src/luciec.c
   src/lexing.c
   src/logging.c
+  ${PLATFORM_SOURCES}
 )
 
 target_include_directories( luciec PRIVATE
@@ -38,6 +48,7 @@ add_executable( tests
   src/logging.c
   src/lexing.c
   tests/testing.c
+  ${PLATFORM_SOURCES}
 )
 
 target_include_directories( tests PRIVATE 
