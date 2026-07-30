@@ -3,11 +3,11 @@
 #include<stdlib.h>
 #include<string.h>
 #include<assert.h>
+#include<stdint.h>
 
+#include "platform.h"
 #include "logging.h"
 #include "lexing.h"
-
-#define DEFAULT_OUTPUT_PATH "a.out"
 
 #define VERSION_MESSAGE "luciec 1.0.0v"
 #define HELP_MESSAGE "Usage: luciec [OPTIONS] file...\n"                       \
@@ -40,7 +40,8 @@ options_t parse_compiler_opts(char **const args, int n) {
   // Default options
   options_t options = {
     .source_filepath = NULL,
-    .output_filepath = NULL, // defaults to DEFAULT_OUTPUT_PATH if NULL
+    .output_filepath = NULL, // defaults to the source file's name
+                             // (without the .lucie extension)
     .show_version = false,
     .show_help = false
   };
@@ -48,7 +49,7 @@ options_t parse_compiler_opts(char **const args, int n) {
   bool waiting_for_sourcefile = true;
   bool waiting_for_outputfile = false;
 
-  for(int i = 0; i < n; i++) {   
+  for(int i = 0; i < n; i++) {
     // Check for flags:
     
     if(strcmp(args[i], "--help") == 0 || strcmp(args[i], "-H") == 0) {
@@ -104,8 +105,15 @@ options_t parse_compiler_opts(char **const args, int n) {
   if(waiting_for_outputfile)
     throw_error("Output file wasn't specified.");
 
-  if(options.output_filepath == NULL)
-    options.output_filepath = DEFAULT_OUTPUT_PATH;
+  if(options.output_filepath == NULL) {
+    const char *source_filename = file_name_from_path(options.source_filepath);
+
+    size_t len = strlen(source_filename) - strlen(".lucie");
+    char *output_filepath = calloc(len+1, 1);
+    memmove(output_filepath, source_filename, len);
+
+    options.output_filepath = output_filepath;
+  }
 
   return options;
 }
