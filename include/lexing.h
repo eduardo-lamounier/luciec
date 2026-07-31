@@ -3,7 +3,7 @@
 
 #include<stdlib.h>
 
-#include "vendor/string-view.h"
+#include "types.h"
 
 #define LIST_TOKEN_TYPES                                                       \
   X(TOKEN_LPAREN) X(TOKEN_RPAREN)                                              \
@@ -46,19 +46,6 @@ typedef enum {
 } token_type_t;
 
 typedef struct {
-  enum { TINT, TFLOAT, TDOUBLE, TCHAR, TSTR, TBOOL } type;
-
-  union {
-    int as_int;
-    float as_float;
-    double as_double;
-    char as_char;
-    bool as_bool;
-    string_view_t as_str;
-  } data;
-} value_t;
-
-typedef struct {
   token_type_t token_type;
   string_view_t lexeme;
   value_t literal; 
@@ -71,7 +58,14 @@ typedef struct {
   const bool had_errors;
 } tokenized_source_t;
 
-#define IS_LITERAL(t) (t).token_type == TOKEN_NUM || (t).token_type == TOKEN_STR
+#define is_literal(t) ((t).token_type == TOKEN_NUM || (t).token_type == TOKEN_STR)
+
+#define null_literal() (value_t) { .type = TNULL }
+
+#define boolean_literal(v) (value_t) {                                         \
+  .type = TBOOL,                                                               \
+  .data = { .as_bool = (v) },                                                  \
+}
 
 // Must be used to free the token and all dynamically allocated
 // fields inside
