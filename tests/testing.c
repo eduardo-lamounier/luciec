@@ -32,49 +32,53 @@ void check_for_equal_tokens(token_t expected, token_t actual) {
             actual_token_type
   );
 
-  if (IS_LITERAL(expected)) {
-    cr_expect(expected.literal.type == actual.literal.type);
-    switch (expected.literal.type) {
-      case TINT:
-        cr_expect(expected.literal.data.as_int == actual.literal.data.as_int,
-                  "Expected a literal value of %d, got %d.",
-                  expected.literal.data.as_int, actual.literal.data.as_int
-        );
-        break;
-      case TDOUBLE:
-        cr_expect(expected.literal.data.as_double == actual.literal.data.as_double,
-                  "Expected a literal value of %f, got %f.",
-                  expected.literal.data.as_double, actual.literal.data.as_double
-        );
-        break;
-      case TFLOAT:
-        cr_expect(expected.literal.data.as_float == actual.literal.data.as_float,
-                  "Expected a literal value of %f, got %f.",
-                  expected.literal.data.as_float, actual.literal.data.as_float
-        );
-        break;
-      case TCHAR:
-        cr_expect(expected.literal.data.as_char == actual.literal.data.as_char,
-                  "Expected a literal value of '%c', got '%c'.",
-                  expected.literal.data.as_char, actual.literal.data.as_char
-        );
-        break;
-      case TSTR:
-        cr_expect(str_view_equals(expected.literal.data.as_str, actual.literal.data.as_str),
-                  "Expected a literal value of \"" str_view_FMT "\", got \"" str_view_FMT "\".",
-                  str_view_ARG(expected.literal.data.as_str),
-                  str_view_ARG(actual.literal.data.as_str)
-        );
-        break;
-      case TBOOL:
-        cr_expect(expected.literal.data.as_bool == actual.literal.data.as_bool,
-                  "Expected a literal value of '%s', got '%s'.",
-                  (expected.literal.data.as_bool ? "true" : "false"),
-                  (actual.literal.data.as_bool ? "true" : "false")
-        );
-        break;
-      }
-  }
+  if(!is_literal(expected))
+    return;
+
+  cr_expect(expected.literal.type == actual.literal.type);
+
+  switch (expected.literal.type) {
+    case TINT:
+      cr_expect(expected.literal.data.as_int == actual.literal.data.as_int,
+                "Expected a literal value of %d, got %d.",
+                expected.literal.data.as_int, actual.literal.data.as_int
+      );
+      break;
+    case TDOUBLE:
+      cr_expect(expected.literal.data.as_double == actual.literal.data.as_double,
+                "Expected a literal value of %f, got %f.",
+                expected.literal.data.as_double, actual.literal.data.as_double
+      );
+      break;
+    case TFLOAT:
+      cr_expect(expected.literal.data.as_float == actual.literal.data.as_float,
+                "Expected a literal value of %f, got %f.",
+                expected.literal.data.as_float, actual.literal.data.as_float
+      );
+      break;
+    case TCHAR:
+      cr_expect(expected.literal.data.as_char == actual.literal.data.as_char,
+                "Expected a literal value of '%c', got '%c'.",
+                expected.literal.data.as_char, actual.literal.data.as_char
+      );
+      break;
+    case TSTR:
+      cr_expect(str_view_equals(expected.literal.data.as_str, actual.literal.data.as_str),
+                "Expected a literal value of \"" str_view_FMT "\", got \"" str_view_FMT "\".",
+                str_view_ARG(expected.literal.data.as_str),
+                str_view_ARG(actual.literal.data.as_str)
+      );
+      break;
+    case TBOOL:
+      cr_expect(expected.literal.data.as_bool == actual.literal.data.as_bool,
+                "Expected a literal value of '%s', got '%s'.",
+                (expected.literal.data.as_bool ? "true" : "false"),
+                (actual.literal.data.as_bool ? "true" : "false")
+      );
+      break;
+    default:
+      cr_expect(false, "Should not get into here");
+  } 
 }
 
 Test(lexer_testing, source_code1) {
