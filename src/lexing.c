@@ -93,8 +93,7 @@ static bool check_for_string_literal(token_t *const token, const char *lexeme,
 
   if(peek(lexer) == '\0') {
     lexer->had_errors = true;
-    report("The string literal wasn't closed.\n"
-                 "At line %zu.\n\n", token->line);
+    report_at(token->line, "The string literal wasn't closed.\n");
     return true;
   }
 
@@ -342,8 +341,7 @@ tokenized_source_t tokenize_source(const char *const source, const size_t source
 
     if (strcmp(peek_ptr(&lexer), "*/") == 0) {
       if (!in_comment_block) {
-        report("'*/' doesn't have a corresponding '/*'.\n"
-                     "At line: %zu.\n\n");
+        report_at(lexer.current_line,"'*/' doesn't have a corresponding '/*'.\n");
         lexer.had_errors = true;
       }
 
@@ -354,8 +352,8 @@ tokenized_source_t tokenize_source(const char *const source, const size_t source
 
     if (strcmp(peek_ptr(&lexer), "//") == 0) {
       if(in_comment_block) {
-        warn("'//' inside a comment block. Did you mean to close the"
-             " block with '*/'?\nAt line: %zu.\n\n", lexer.current_line);
+        warn_at(lexer.current_line, "'//' inside a comment block. "
+                "Did you mean to close the block with '*/'?\n");
         advance_by(&lexer, 2);
         continue;
       }
@@ -367,8 +365,8 @@ tokenized_source_t tokenize_source(const char *const source, const size_t source
 
     if (strcmp(peek_ptr(&lexer), "/*") == 0) {
       if (in_comment_block)
-        warn("'/*' inside a comment block. Did you mean to close it"
-             " with '*/'?\nAt line: %zu.\n\n", lexer.current_line);
+        warn_at(lexer.current_line, "'/*' inside a comment block. "
+                "Did you mean to close it with '*/'?\n");
 
       in_comment_block = true;
       advance_by(&lexer, 2);

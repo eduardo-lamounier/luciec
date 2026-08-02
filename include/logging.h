@@ -1,6 +1,7 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
+#include<stdlib.h>
 #include<stdarg.h>
 
 #define MEMORY_ALLOCATION_ERRMSG "The input file exceeds the processing" \
@@ -18,6 +19,12 @@ void verror(const char *fmt, va_list args);
 // args lists.
 void vwarn(const char *fmt, va_list args);
 
+void vreport_at(size_t line, const char *fmt, va_list args);
+
+void verror_at(size_t line, const char *fmt, va_list args);
+
+void vwarn_at(size_t line, const char *fmt, va_list args);
+
 // Displays the formated error message
 void report(const char *fmt, ...);
 
@@ -26,5 +33,11 @@ void error(const char *fmt, ...);
 
 // Displays the formated warning message
 void warn(const char *fmt, ...);
+
+void report_at(size_t line, const char *fmt, ...);
+
+void error_at(size_t line, const char *fmt, ...);
+
+void warn_at(size_t line, const char *fmt, ...);
 
 #endif
