@@ -1,24 +1,47 @@
 #include "logging.h"
 
+#include <stdarg.h>
 #include<stdio.h>
 #include<stdlib.h>
 
-void report_error(const char *const error_msg) {
+void vreport(const char *fmt, va_list args) {
   printf("\033[31m");
-  printf("ERROR: %s", error_msg);
+  printf("ERROR: ");
+  vprintf(fmt, args);
   printf("\033[0m\n");
 }
 
-void throw_error(const char *const error_msg) {
-  report_error(error_msg);
+void verror(const char *fmt, va_list args) {
+  vreport(fmt, args);
   exit(EXIT_FAILURE);
 }
 
-void warn(const char *const warning) {
+void vwarn(const char *fmt, va_list args) {
   printf("\033[33m");
-  printf("WARNING: %s", warning);
+  printf("fmt: ");
+  vprintf(fmt, args);
   printf("\033[0m\n");
 }
 
-char log_msg_buff[LOG_MESSAGE_BUFFER_SIZE];
+void report(const char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  vreport(fmt, args);
+  va_end(args);
+}
+
+void error(const char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  vreport(fmt, args);
+  va_end(args);
+  exit(EXIT_FAILURE);
+}
+
+void warn(const char *fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  vwarn(fmt, args);
+  va_end(args);
+}
 

@@ -1,23 +1,30 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#define LOG_MESSAGE_BUFFER_SIZE 1024
+#include<stdarg.h>
 
 #define MEMORY_ALLOCATION_ERRMSG "The input file exceeds the processing" \
-                                 " size limits of this application."
+                                 " size limits of this application.\n\n"
 
-// Displays an error message
-void report_error(const char *const error_msg);
+// Displays the formated error message with the specified
+// args list.
+void vreport(const char *fmt, va_list args);
 
-// Reports the error and terminates the program
-void throw_error(const char *const error_msg);
+// Displays the formated error message with the specified
+// args list and terminates the program.
+void verror(const char *fmt, va_list args);
 
-// Just displays a warning message
-void warn(const char *const warning);
+// Displays a formated warning message with the specifiedd
+// args lists.
+void vwarn(const char *fmt, va_list args);
 
-// Buffer to print formatted messages. You should write the message
-// into here with 'snprintf' and, after the message gets printed,
-// leave it as it is
-extern char log_msg_buff[LOG_MESSAGE_BUFFER_SIZE];
+// Displays the formated error message
+void report(const char *fmt, ...);
+
+// Reports the formated error and terminates the program
+void error(const char *fmt, ...);
+
+// Displays the formated warning message
+void warn(const char *fmt, ...);
 
 #endif

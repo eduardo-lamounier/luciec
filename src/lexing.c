@@ -49,7 +49,7 @@ static inline void advance_by(lexer_t *const lexer, const size_t n) {
 // by the lexer.
 //
 // Reallocates the read tokens array if necessary to make sure it can
-// hold the new token. Exits the program (with 'throw_error') if the
+// hold the new token. Exits the program (with 'error()') if the
 // reallocation fails.
 //
 // The current capacity of the tokens array is passed by reference
@@ -66,7 +66,7 @@ static void add_token(lexer_t *const lexer,
     );
 
     if (lexer->read_tokens == NULL)
-      throw_error(MEMORY_ALLOCATION_ERRMSG);
+      error(MEMORY_ALLOCATION_ERRMSG);
   }
 
   lexer->read_tokens[lexer->read_tokens_amount++] = token;
@@ -92,11 +92,9 @@ static bool check_for_string_literal(token_t *const token, const char *lexeme,
       lexer->current_line++;
 
   if(peek(lexer) == '\0') {
-    snprintf(log_msg_buff, LOG_MESSAGE_BUFFER_SIZE, 
-             "The string literal wasn't closed."
-             "At line %zu.", token->line);
     lexer->had_errors = true;
-    report_error(log_msg_buff);
+    report("The string literal wasn't closed.\n"
+                 "At line %zu.\n\n", token->line);
     return true;
   }
 
@@ -324,7 +322,7 @@ tokenized_source_t tokenize_source(const char *const source, const size_t source
   };
 
   if (lexer.read_tokens == NULL)
-    throw_error(MEMORY_ALLOCATION_ERRMSG);
+    error(MEMORY_ALLOCATION_ERRMSG);
 
   bool in_comment_block = false;
   for (; peek(&lexer) != '\0';) {
@@ -344,11 +342,8 @@ tokenized_source_t tokenize_source(const char *const source, const size_t source
 
     if (strcmp(peek_ptr(&lexer), "*/") == 0) {
       if (!in_comment_block) {
-        snprintf(log_msg_buff, LOG_MESSAGE_BUFFER_SIZE,
-                 "'*/' doesn't have a correspondent '/*'.\n"
-                 "In line: %zu\n\n",
-                 lexer.current_line);
-        report_error(log_msg_buff);
+        report("'*/' doesn't have a corresponding '/*'.\n"
+                     "At line: %zu.\n\n");
         lexer.had_errors = true;
       }
 
@@ -359,10 +354,8 @@ tokenized_source_t tokenize_source(const char *const source, const size_t source
 
     if (strcmp(peek_ptr(&lexer), "//") == 0) {
       if(in_comment_block) {
-        snprintf(log_msg_buff, LOG_MESSAGE_BUFFER_SIZE,
-                 "'//' inside a comment block. Did you mean to write '*/'?\n"
-                 "In line: %zu\n\n", lexer.current_line);
-        warn(log_msg_buff);
+        warn("'//' inside a comment block. Did you mean to close the"
+             " block with '*/'?\nAt line: %zu.\n\n", lexer.current_line);
         advance_by(&lexer, 2);
         continue;
       }
@@ -373,13 +366,9 @@ tokenized_source_t tokenize_source(const char *const source, const size_t source
     }
 
     if (strcmp(peek_ptr(&lexer), "/*") == 0) {
-      if (in_comment_block) {
-        snprintf(log_msg_buff, LOG_MESSAGE_BUFFER_SIZE,
-                 "'/*' inside a comment block. Did you mean to close it?\n"
-                 "In line: %zu\n\n",
-                 lexer.current_line);
-        warn(log_msg_buff);
-      }
+      if (in_comment_block)
+        warn("'/*' inside a comment block. Did you mean to close it"
+             " with '*/'?\nAt line: %zu.\n\n", lexer.current_line);
 
       in_comment_block = true;
       advance_by(&lexer, 2);
