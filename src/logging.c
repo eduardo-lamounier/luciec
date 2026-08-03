@@ -1,6 +1,6 @@
 #include "logging.h"
 
-#include <stdarg.h>
+#include<stdarg.h>
 #include<stdio.h>
 #include<stdlib.h>
 
@@ -18,14 +18,16 @@ void verror(const char *fmt, va_list args) {
 
 void vwarn(const char *fmt, va_list args) {
   printf("\033[33m");
-  printf("fmt: ");
+  printf("WARNING: ");
   vprintf(fmt, args);
   printf("\033[0m\n");
 }
 
 void vreport_at(size_t line, const char *fmt, va_list args) {
-  printf("At line %zu: ", line);
-  vreport(fmt, args);
+  printf("\033[31m");
+  printf("ERROR: At line %zu: ", line);
+  vprintf(fmt, args);
+  printf("\033[0m\n");
 }
 
 void verror_at(size_t line, const char *fmt, va_list args) {
@@ -34,8 +36,11 @@ void verror_at(size_t line, const char *fmt, va_list args) {
 }
 
 void vwarn_at(size_t line, const char *fmt, va_list args) {
-  printf("At line %zu: ", line);
   vwarn(fmt, args);
+  printf("\033[33m");
+  printf("WARNING: At line %zu: ", line);
+  vprintf(fmt, args);
+  printf("\033[0m\n");
 }
 
 void report(const char *fmt, ...) {
