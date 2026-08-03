@@ -120,9 +120,14 @@ options_t parse_compiler_opts(char **const args, int n) {
 //
 // The value size_out points to will hold the source's size if the allocation
 // succeds.
-//
-// The source file must have been opened as a binary file
-char *read_source(FILE *source_file, long *const size_out) {
+char *read_source(const char *filepath, long *const size_out) {
+  assert(filepath != NULL && size_out != NULL);
+
+  FILE *source_file = fopen(filepath, "rb");
+
+  if(source_file == NULL)
+    error("It wasn't possible to read or find the file '%s'.", filepath); 
+
   fseek(source_file, 0, SEEK_END);
   long source_size = ftell(source_file);
 
@@ -157,15 +162,9 @@ int main(int argc, char **argv) {
   // source file to compile:
   if(opts.source_filepath == NULL)
     error(NO_SOURCE_FILE_MESSAGE);
-
-  FILE *source_file = fopen(opts.source_filepath, "rb");
-
-  if(source_file == NULL)
-    error("It wasn't possible to read or find the file '%s'.",
-                opts.source_filepath);
-
+ 
   long source_size;
-  char *const source = read_source(source_file, &source_size);
+  char *const source = read_source(opts.source_filepath, &source_size);
 
   if(source == NULL)
     error(MEMORY_ALLOCATION_ERRMSG);
