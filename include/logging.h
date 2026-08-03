@@ -19,10 +19,23 @@ void verror(const char *fmt, va_list args);
 // args lists.
 void vwarn(const char *fmt, va_list args);
 
+// Displays the formated error message, with the specified args list, in the
+// format:
+// ERROR: At line [x]: <specified message>
+//
 void vreport_at(size_t line, const char *fmt, va_list args);
 
+// Displays the formated error message, with the specified args list, in the
+// format:
+// ERROR: At line [x]: <specified message>
+//
+// Terminates the program afterwards.
 void verror_at(size_t line, const char *fmt, va_list args);
 
+// Displays the formated warning message, with the specified args list, in the
+// format:
+// WARNING: At line [x]: <specified-message>
+//
 void vwarn_at(size_t line, const char *fmt, va_list args);
 
 // Displays the formated error message
@@ -34,10 +47,20 @@ void error(const char *fmt, ...);
 // Displays the formated warning message
 void warn(const char *fmt, ...);
 
+// Displays the formated error message in the format:
+// ERROR: At line [x]: <specified message>
+//
 void report_at(size_t line, const char *fmt, ...);
 
+// Displays the formated error message in the format:
+// ERROR: At line [x]: <specified-message>
+//
+// Terminates the program afterwards.
 void error_at(size_t line, const char *fmt, ...);
 
+// Displays the formated warning message in the format:
+// WARNING: At line [x]: <specified-message>
+//
 void warn_at(size_t line, const char *fmt, ...);
 
 #endif
