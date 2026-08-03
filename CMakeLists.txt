@@ -36,11 +36,10 @@ target_include_directories( luciec PRIVATE
   include/
 )
 
-target_compile_options( luciec PRIVATE
-  -Wall
-  -Wextra
-  -g
-)
+# For gcc and clang only:
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options( luciec PRIVATE -Wall -Wextra -g)
+endif()
 
 # Testing
 
@@ -56,11 +55,10 @@ target_include_directories( tests PRIVATE
   ${CRITERION_INCLUDE_DIR}
 )
 
-target_compile_options( tests PRIVATE 
-  -Wall
-  -Wextra
-  -g
-)
+# Also for gcc and clang only:
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options( tests PRIVATE -Wall -Wextra -g)
+endif()
 
 target_link_libraries( tests PRIVATE
   ${CRITERION_LIBRARY}
