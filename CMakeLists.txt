@@ -38,7 +38,7 @@ target_include_directories( luciec PRIVATE
 
 # For gcc and clang only:
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-  target_compile_options( luciec PRIVATE -Wall -Wextra -g)
+  target_compile_options(luciec PRIVATE -Wall -Wextra -g)
 endif()
 
 # Testing
@@ -57,7 +57,7 @@ target_include_directories( tests PRIVATE
 
 # Also for gcc and clang only:
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-  target_compile_options( tests PRIVATE -Wall -Wextra -g)
+  target_compile_options(tests PRIVATE -Wall -Wextra -g)
 endif()
 
 target_link_libraries( tests PRIVATE
