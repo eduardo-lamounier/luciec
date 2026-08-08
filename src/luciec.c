@@ -8,6 +8,7 @@
 #include "platform.h"
 #include "logging.h"
 #include "lexing.h"
+#include "parsing.h"
 
 #define VERSION_MESSAGE "luciec 1.0.0v"
 #define HELP_MESSAGE "Usage: luciec [OPTIONS] file...\n"                       \
@@ -175,10 +176,25 @@ int main(int argc, char **argv) {
     puts(HAD_ERRORS_MESSAGE); return EXIT_FAILURE;
   }
   
-  // Parsing
+  parser_t *parser = parser_new(tokenized_source.read_tokens);
 
-  free(tokenized_source.read_tokens);
+  if(parser == NULL) {
+    puts(MEMORY_ALLOCATION_ERRMSG); return EXIT_FAILURE;
+  }
+
+  parse_ASTs(parser);
+
+  if(parser_had_errors(parser)) {
+    puts(HAD_ERRORS_MESSAGE); return EXIT_FAILURE;
+  }
+
+  expr_t *AST = get_parser_AST(parser, 0);
+  show_AST(AST);
+
+  parser_destroy(parser);
+
   free(source);
+  free(tokenized_source.read_tokens);
   return EXIT_SUCCESS;
 }
 

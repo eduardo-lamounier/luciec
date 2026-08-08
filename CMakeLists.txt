@@ -27,8 +27,10 @@ endif()
 
 add_executable( luciec
   src/luciec.c
-  src/lexing.c
+  src/types.c
   src/logging.c
+  src/lexing.c
+  src/parsing.c
   ${PLATFORM_SOURCES}
 )
 
