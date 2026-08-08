@@ -31,10 +31,21 @@ static inline void advance(parser_t *parser) {
     parser->current++;
 }
 
+static inline void parser_report_at(parser_t *parser,
+                                   size_t line, const char *fmt, ...) {
+  parser->had_errors = true;
+  va_list args;
+  va_start(args, fmt);
+  vreport_at(line, fmt, args);
+  va_end(args);
+}
+
 static bool expect(parser_t *parser, token_type_t token_type) {
   if(!matches(parser, token_type)) {
     const token_t *current = peek(parser);
     report_at(current->line, "Unexpected '%s'.\n", current->lexeme);
+    parser_report_at(parser, current->line, "Unexpected '%s'.\n",
+                     current->lexeme);
     return false;
   }
 
@@ -177,7 +188,7 @@ static expr_t *primary(parser_t *parser) {
     return new_grouping_expr(parser->arena, sub_expr);
   }
  
-  report_at(peek(parser)->line, "Expected expression.");
+  parser_report_at(parser, peek(parser)->line, "Expected expression.");
   return NULL;
 }
 
