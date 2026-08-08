@@ -5,15 +5,7 @@ set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-enable_testing()
-
-find_path(CRITERION_INCLUDE_DIR NAMES criterion/criterion.h)
-find_library(CRITERION_LIBRARY NAMES criterion)
-
-if(NOT CRITERION_INCLUDE_DIR OR NOT CRITERION_LIBRARY)
-  message(FATAL_ERROR "Criterion is not installed in your system.")
-endif()
-
+option(TESTING "Build tests with Criterion (must be installed in your system)" OFF)
 
 if(WIN32)
   set(PLATFORM_SOURCES src/platform_win.c)
@@ -45,26 +37,37 @@ endif()
 
 # Testing
 
-add_executable( tests
-  src/logging.c
-  src/lexing.c
-  tests/testing.c
-  ${PLATFORM_SOURCES}
-)
+if(TESTING)
+  enable_testing()
 
-target_include_directories( tests PRIVATE 
-  include/
-  ${CRITERION_INCLUDE_DIR}
-)
+  find_path(CRITERION_INCLUDE_DIR NAMES criterion/criterion.h)
+  find_library(CRITERION_LIBRARY NAMES criterion)
 
-# Also for gcc and clang only:
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-  target_compile_options(tests PRIVATE -Wall -Wextra -g)
+  if(NOT CRITERION_INCLUDE_DIR OR NOT CRITERION_LIBRARY)
+    message(FATAL_ERROR "Criterion is not installed in your system.")
+  endif()
+
+  add_executable( tests
+    src/logging.c
+    src/lexing.c
+    tests/testing.c
+    ${PLATFORM_SOURCES}
+  )
+
+  target_include_directories( tests PRIVATE 
+    include/
+    ${CRITERION_INCLUDE_DIR}
+  )
+
+  # Also for gcc and clang only:
+  if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options( tests PRIVATE -Wall -Wextra -g)
+  endif()
+
+  target_link_libraries( tests PRIVATE
+    ${CRITERION_LIBRARY}
+  )
+
+  add_test(NAME AllUnitTests COMMAND tests)
 endif()
-
-target_link_libraries( tests PRIVATE
-  ${CRITERION_LIBRARY}
-)
-
-add_test(NAME AllUnitTests COMMAND tests)
 
