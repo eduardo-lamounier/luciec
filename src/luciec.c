@@ -8,6 +8,7 @@
 #include "platform.h"
 #include "logging.h"
 #include "lexing.h"
+#include "parsing.h"
 
 #define VERSION_MESSAGE "luciec 1.0.0v"
 #define HELP_MESSAGE "Usage: luciec [OPTIONS] file...\n"                       \
@@ -32,7 +33,7 @@ typedef struct {
 // The first argument of the program (the executable's path) should NOT be
 // included.
 //
-// This function throws an error using 'throw_error'
+// This function throws an error using 'error()'
 // in case of something unexpected when parsing
 options_t parse_compiler_opts(char **const args, int n) {
   assert(n >= 1);
@@ -64,16 +65,14 @@ options_t parse_compiler_opts(char **const args, int n) {
 
     if(strcmp(args[i], "--output") == 0 || strcmp(args[i], "-O") == 0) {
       if(options.output_filepath != NULL)
-        throw_error("Output file path has already been specified.");
+        error("Output file path has already been specified.");
 
       waiting_for_outputfile = true;
       continue;
     }
 
-    if(args[i][0] == '-') {
-      snprintf(log_msg_buff, LOG_MESSAGE_BUFFER_SIZE, "Unknown flag '%s'.", args[i]);
-      throw_error(log_msg_buff);
-    }
+    if(args[i][0] == '-')
+      error("Unknown flag '%s'.", args[i]);
 
     // Check for arguments:
     
@@ -89,8 +88,7 @@ options_t parse_compiler_opts(char **const args, int n) {
       continue;
     }
 
-    snprintf(log_msg_buff, LOG_MESSAGE_BUFFER_SIZE, "Unexpected argument '%s'.", args[i]);
-    throw_error(log_msg_buff);
+    error("Unexpected argument '%s'.", args[i]);
   }
 
   if(options.source_filepath != NULL && (
@@ -100,10 +98,10 @@ options_t parse_compiler_opts(char **const args, int n) {
       ".lucie"
     ) != 0)
   )
-      throw_error("The input isn't a .lucie file.");
+      error("The input isn't a .lucie file.");
 
   if(waiting_for_outputfile)
-    throw_error("Output file wasn't specified.");
+    error("Output file wasn't specified.");
 
   if(options.output_filepath == NULL) {
     const char *source_filename = file_name_from_path(options.source_filepath);
@@ -123,9 +121,14 @@ options_t parse_compiler_opts(char **const args, int n) {
 //
 // The value size_out points to will hold the source's size if the allocation
 // succeds.
-//
-// The source file must have been opened as a binary file
-char *read_source(FILE *source_file, long *const size_out) {
+char *read_source(const char *filepath, long *const size_out) {
+  assert(filepath != NULL && size_out != NULL);
+
+  FILE *source_file = fopen(filepath, "rb");
+
+  if(source_file == NULL)
+    error("It wasn't possible to read or find the file '%s'.", filepath); 
+
   fseek(source_file, 0, SEEK_END);
   long source_size = ftell(source_file);
 
@@ -144,7 +147,7 @@ char *read_source(FILE *source_file, long *const size_out) {
 
 int main(int argc, char **argv) {
   if(argc == 1)
-    throw_error(NO_SOURCE_FILE_MESSAGE);
+    error(NO_SOURCE_FILE_MESSAGE);
 
   options_t opts = parse_compiler_opts(argv + 1, argc - 1);
 
@@ -159,22 +162,13 @@ int main(int argc, char **argv) {
   // No option that would made the program terminate was passed, so we need the
   // source file to compile:
   if(opts.source_filepath == NULL)
-    throw_error(NO_SOURCE_FILE_MESSAGE);
-
-  FILE *source_file = fopen(opts.source_filepath, "rb");
-
-  if(source_file == NULL) {
-    snprintf(log_msg_buff, LOG_MESSAGE_BUFFER_SIZE,
-             "It wasn't possible to read or find the file '%s'.",
-             opts.source_filepath);
-    throw_error(log_msg_buff);
-  }
-
+    error(NO_SOURCE_FILE_MESSAGE);
+ 
   long source_size;
-  char *const source = read_source(source_file, &source_size);
+  char *const source = read_source(opts.source_filepath, &source_size);
 
   if(source == NULL)
-    throw_error(MEMORY_ALLOCATION_ERRMSG);
+    error(MEMORY_ALLOCATION_ERRMSG);
 
   tokenized_source_t tokenized_source = tokenize_source(source, source_size);
  
@@ -182,10 +176,25 @@ int main(int argc, char **argv) {
     puts(HAD_ERRORS_MESSAGE); return EXIT_FAILURE;
   }
   
-  // Parsing
+  parser_t *parser = parser_new(tokenized_source.read_tokens);
 
-  free(tokenized_source.read_tokens);
+  if(parser == NULL) {
+    puts(MEMORY_ALLOCATION_ERRMSG); return EXIT_FAILURE;
+  }
+
+  parse_ASTs(parser);
+
+  if(parser_had_errors(parser)) {
+    puts(HAD_ERRORS_MESSAGE); return EXIT_FAILURE;
+  }
+
+  expr_t *AST = get_parser_AST(parser, 0);
+  show_AST(AST);
+
+  parser_destroy(parser);
+
   free(source);
+  free(tokenized_source.read_tokens);
   return EXIT_SUCCESS;
 }
 

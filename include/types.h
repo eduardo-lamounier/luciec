@@ -3,6 +3,7 @@
 
 #include<stdbool.h>
 #include<stdint.h>
+#include<inttypes.h>
 
 #include "vendor/string-view.h"
 
@@ -15,6 +16,15 @@ typedef double lucie_double_t;
 typedef char lucie_char_t;
 typedef bool lucie_bool_t;
 typedef string_view_t lucie_str_t;
+
+#define lucie_int_FMT "%" PRId32
+#define lucie_uint_FMT "%" PRIu32
+#define lucie_long_FMT "%" PRId64
+#define lucie_ulong_FMT "%" PRIu64
+#define lucie_float_FMT "%f"
+#define lucie_double_FMT "%lf"
+#define lucie_char_FMT "%c"
+#define lucie_str_FMT str_view_FMT
 
 #define LIST_TYPES                                                             \
   X(TINT) X(TUINT)                                                             \
@@ -52,5 +62,7 @@ typedef struct {
   || t == TLONG  || t == TULONG                                        \
   || t == TFLOAT || t == TDOUBLE                                       \
   )
+
+void value_print(value_t value);
 
 #endif

@@ -19,8 +19,10 @@ endif()
 
 add_executable( luciec
   src/luciec.c
-  src/lexing.c
+  src/types.c
   src/logging.c
+  src/lexing.c
+  src/parsing.c
   ${PLATFORM_SOURCES}
 )
 
@@ -30,7 +32,7 @@ target_include_directories( luciec PRIVATE
 
 # For gcc and clang only:
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-  target_compile_options( luciec PRIVATE -Wall -Wextra -g)
+  target_compile_options(luciec PRIVATE -Wall -Wextra -g)
 endif()
 
 # Testing
