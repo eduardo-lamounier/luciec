@@ -188,7 +188,7 @@ int main(int argc, char **argv) {
     puts(HAD_ERRORS_MESSAGE); return EXIT_FAILURE;
   }
 
-  expr_t *AST = get_parser_AST(parser, 0);
+  expr_t *AST = parser_AST(parser, 0);
   show_AST(AST);
 
   parser_destroy(parser);

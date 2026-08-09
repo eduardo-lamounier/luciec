@@ -26,9 +26,9 @@ typedef struct expr {
 
 typedef struct parser parser_t;
 
-expr_t *get_parser_AST(const parser_t *parser, size_t idx);
+expr_t *parser_AST(const parser_t *parser, size_t idx);
 
-size_t get_parser_ASTs_amount(const parser_t *parser);
+size_t parser_ASTs_amount(const parser_t *parser);
 
 bool parser_had_errors(const parser_t *parser);
 
