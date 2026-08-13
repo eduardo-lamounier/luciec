@@ -19,7 +19,7 @@ void value_print(value_t value) {
     case TBOOL:
       printf(value.data.as_bool ? "true" : "false"); break;
     case TSTR:
-      printf(str_view_FMT, str_view_ARG(value.data.as_str)); break;
+      printf("\"" str_view_FMT "\"", str_view_ARG(value.data.as_str)); break;
     case TNULL:
       printf("null"); break;
   };
