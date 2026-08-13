@@ -83,7 +83,7 @@ static void add_token(lexer_t *const lexer,
 static bool check_for_string_literal(token_t *const token, const char *lexeme,
                                      const size_t lexeme_start,
                                      lexer_t *const lexer) {
-  if(peek(lexer) != '\"')
+  if(lexer->source[lexeme_start] != '\"')
     return false;
 
   advance(lexer);
