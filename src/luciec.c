@@ -103,7 +103,7 @@ options_t parse_compiler_opts(char **const args, int n) {
   if(waiting_for_outputfile)
     error("Output file wasn't specified.");
 
-  if(options.output_filepath == NULL) {
+  if(options.output_filepath == NULL && options.source_filepath != NULL) {
     const char *source_filename = file_name_from_path(options.source_filepath);
 
     size_t len = strlen(source_filename) - strlen(".lucie");
