@@ -7,6 +7,11 @@
 #define MEMORY_ALLOCATION_ERRMSG "The input file exceeds the processing" \
                                  " size limits of this application.\n\n"
 
+#define unreachable() do {                                                     \
+    printf("Should not reach here.");                                          \
+    assert(false);                                                             \
+  } while(0)
+
 // Displays the formated error message with the specified
 // args list.
 void vreport(const char *fmt, va_list args);
