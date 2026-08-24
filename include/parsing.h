@@ -3,26 +3,42 @@
 
 #include "lexing.h"
 
-typedef struct expr { 
+typedef struct expr expr_t;
+
+typedef enum {
+  EXPR_UNARY,
+  EXPR_BINARY,
+  EXPR_LITERAL,
+  EXPR_GROUPING,
+} expr_kind_t;
+
+typedef struct {
+  const token_t *operator;
+  expr_t *operand;
+} unary_expr_t;
+
+typedef struct {
+  const token_t *operator;
+  struct expr *operands[2];
+} binary_expr_t;
+
+typedef struct {
+  value_t data;
+} literal_expr_t;
+
+typedef struct {
+  expr_t *inner_expr;
+} group_expr_t;
+
+struct expr { 
   union {
-    struct {
-      const token_t *operator;
-      struct expr *operand;
-    } as_unary;
-    struct {
-      const token_t *operator;
-      struct expr *operands[2];
-    } as_binary;
-    value_t as_literal;
-    struct expr *as_grouping;
+    unary_expr_t as_unary;
+    binary_expr_t as_binary;
+    literal_expr_t as_literal;
+    group_expr_t as_grouping;
   } val;
-  enum {
-    UNARY_EXPR,
-    BINARY_EXPR,
-    LITERAL_EXPR,
-    GROUPING_EXPR,
-  } expr_type;
-} expr_t;
+  expr_kind_t expr_kind;
+};
 
 typedef struct parser parser_t;
 

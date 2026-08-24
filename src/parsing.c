@@ -83,8 +83,8 @@ static expr_t *new_grouping_expr(dynamic_arena_t *arena, expr_t *sub_expr) {
     error(MEMORY_ALLOCATION_ERRMSG);
 
   *expr = (expr_t) {
-    .expr_type = GROUPING_EXPR,
-    .val = { .as_grouping = sub_expr }
+    .expr_kind = EXPR_GROUPING,
+    .val = { .as_grouping = { .inner_expr = sub_expr } }
   };
 
   return expr;
@@ -98,8 +98,8 @@ static expr_t *new_literal_expr(dynamic_arena_t *arena, value_t value) {
     error(MEMORY_ALLOCATION_ERRMSG);
 
   *expr = (expr_t) {
-    .expr_type = LITERAL_EXPR,
-    .val = { .as_literal = value },
+    .expr_kind = EXPR_LITERAL,
+    .val = { .as_literal = { .data = value } },
   };
 
   return expr;
@@ -114,7 +114,7 @@ static expr_t *new_unary_expr(dynamic_arena_t *arena, const token_t *operator,
     error(MEMORY_ALLOCATION_ERRMSG);
 
   *expr = (expr_t) {
-    .expr_type = UNARY_EXPR,
+    .expr_kind = EXPR_UNARY,
     .val = {
       .as_unary = {
         .operator = operator,
@@ -137,7 +137,7 @@ static expr_t *new_binary_expr(dynamic_arena_t *arena, const token_t *operator,
     error(MEMORY_ALLOCATION_ERRMSG);
 
   *expr = (expr_t) {
-    .expr_type = BINARY_EXPR,
+    .expr_kind = EXPR_BINARY,
     .val = {
       .as_binary = {
         .operator = operator,
@@ -387,17 +387,17 @@ void parse_ASTs(parser_t *parser) {
 static void _show_AST(const expr_t *expr, bool put_space) {
   assert(expr != NULL);
   
-  switch(expr->expr_type) {
-    case GROUPING_EXPR:
-      _show_AST(expr->val.as_grouping, false);
+  switch(expr->expr_kind) {
+    case EXPR_GROUPING:
+      _show_AST(expr->val.as_grouping.inner_expr, false);
       break;
-    case UNARY_EXPR:
+    case EXPR_UNARY:
       printf(str_view_FMT, str_view_ARG(expr->val.as_unary.operator->lexeme));
       printf("( ");
       _show_AST(expr->val.as_unary.operand, true);
       printf(")");
       break;
-    case BINARY_EXPR:
+    case EXPR_BINARY:
       printf(str_view_FMT, str_view_ARG(expr->val.as_binary.operator->lexeme));
       printf("( ");
       _show_AST(expr->val.as_binary.operands[0], false);
@@ -405,8 +405,8 @@ static void _show_AST(const expr_t *expr, bool put_space) {
       _show_AST(expr->val.as_binary.operands[1], true);
       printf(")");
       break;
-    case LITERAL_EXPR:
-      value_print(expr->val.as_literal);
+    case EXPR_LITERAL:
+      value_print(expr->val.as_literal.data);
       break;
     default:
       assert(false); // Should not get into here
