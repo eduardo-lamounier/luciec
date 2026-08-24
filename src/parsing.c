@@ -42,11 +42,34 @@ static inline void parser_report_at(parser_t *parser,
 
 static bool expect(parser_t *parser, token_type_t token_type) {
   if(!matches(parser, token_type)) {
-    const token_t *current = peek(parser);
-    report_at(current->line, "Unexpected '%s'.\n", current->lexeme);
-    parser_report_at(parser, current->line, "Unexpected '%s'.\n",
-                     current->lexeme);
-    return false;
+    size_t line = peek(parser)->line;
+    string_view_t actual = peek(parser)->lexeme;
+    const char *expected = token_lexemes[token_type];
+
+    if(expected != NULL) {
+      parser_report_at(parser, line, "Expected '%s', got '" str_view_FMT "'.\n",
+                       expected, str_view_ARG(actual));
+      return false;
+    }
+
+    // Token is a literal
+    switch (token_type) {
+      case TOKEN_ID:
+        expected = "an indentifier";
+        break;
+      case TOKEN_STR:
+        expected = "a string literal";
+        break;
+      case TOKEN_NUM:
+        expected = "a number literal";
+        break;
+      default:
+        unreachable();
+        break;
+    }
+
+    parser_report_at(parser, line, "Expected %s, got '" str_view_FMT "'.\n",
+                     expected, str_view_ARG(actual));
   }
 
   advance(parser);
