@@ -79,4 +79,6 @@ void token_clear(token_t *const token);
 tokenized_source_t tokenize_source(const char *const source_file,
                                    const size_t source_size);
 
+extern const char *token_lexemes[];
+
 #endif

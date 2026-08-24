@@ -7,6 +7,40 @@
 
 #include "logging.h"
 
+// Stores the lexemes for all non-literals
+//
+// Lexemes for literals are NULL
+const char *token_lexemes[TOKEN_EOF+1] = {
+  [TOKEN_LPAREN] = "(", [TOKEN_RPAREN] = ")",
+  [TOKEN_LBRACE] = "{", [TOKEN_RBRACE] = "}",
+  [TOKEN_COMMA] = ",", [TOKEN_SEMICOLON] = ";", [TOKEN_COLON] = ":",
+  [TOKEN_PLUS] = "+", [TOKEN_MINUS] = "-", [TOKEN_STAR] = "*", [TOKEN_SLASH] = "/",
+
+  [TOKEN_AMP] = "&", [TOKEN_PIPE] = "|",
+  [TOKEN_BANG] = "!", [TOKEN_EQUAL] = "=",
+  [TOKEN_LESS] = "<", [TOKEN_GREATER] = ">",
+
+  [TOKEN_AMP_AMP] = "&&", [TOKEN_PIPE_PIPE] = "||",
+  [TOKEN_BANG_EQUAL] = "!=", [TOKEN_EQUAL_EQUAL] = "==",
+  [TOKEN_LESS_EQUAL] = "<=", [TOKEN_GREATER_EQUAL] = ">=",
+  [TOKEN_EQUAL_GREATER] = "=>",
+
+  // Literals skipped
+
+  [TOKEN_NULL] = "null",
+  [TOKEN_FALSE] = "false",
+  [TOKEN_TRUE] = "true",
+  [TOKEN_IF] = "if",
+  [TOKEN_ELSE] = "else",
+  [TOKEN_WHILE] = "while",
+  [TOKEN_FOR] = "for",
+  [TOKEN_FUNC] = "func",
+  [TOKEN_RETURN] = "return",
+  [TOKEN_USING] = "using",
+
+  [TOKEN_EOF] = "<EOF>",
+};
+
 typedef struct {
   bool had_errors;
   const char *const source;
@@ -155,34 +189,34 @@ static bool check_for_number_literal(token_t *const token, char current_chr,
 //
 // A string view to the token's lexeme must be specified.
 static bool check_for_keywords(token_t *const token, string_view_t lexeme_view) {
-  if (str_view_equals_cstr(lexeme_view, "null")) {
+  if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_NULL])) {
     token->token_type = TOKEN_NULL; return true;
   }
-  if (str_view_equals_cstr(lexeme_view, "false")) {
+  if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_FALSE])) {
     token->token_type = TOKEN_FALSE; return true;
   }
-  if (str_view_equals_cstr(lexeme_view, "true")) {
+  if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_TRUE])) {
     token->token_type = TOKEN_TRUE; return true;
   }
-  if (str_view_equals_cstr(lexeme_view, "if")) {
+  if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_IF])) {
     token->token_type = TOKEN_IF; return true;
   }
-  if (str_view_equals_cstr(lexeme_view, "else")) {
+  if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_ELSE])) {
     token->token_type = TOKEN_ELSE; return true;
   }
-  if (str_view_equals_cstr(lexeme_view, "while")) {
+  if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_WHILE])) {
     token->token_type = TOKEN_WHILE; return true;
   }
-  if (str_view_equals_cstr(lexeme_view, "for")) {
+  if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_FOR])) {
     token->token_type = TOKEN_FOR; return true;
   }
-  if (str_view_equals_cstr(lexeme_view, "func")) {
+  if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_FUNC])) {
     token->token_type = TOKEN_FUNC; return true;
   }
-  if (str_view_equals_cstr(lexeme_view, "return")) {
+  if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_RETURN])) {
     token->token_type = TOKEN_RETURN; return true;
   }
-  if (str_view_equals_cstr(lexeme_view, "using")) {
+  if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_USING])) {
     token->token_type = TOKEN_USING; return true;
   }
 
@@ -385,7 +419,7 @@ tokenized_source_t tokenize_source(const char *const source, const size_t source
 
   token_t EOF_token = {
     .token_type = TOKEN_EOF,
-    .lexeme = str_view_from(""),
+    .lexeme = str_view_from(token_lexemes[TOKEN_EOF]),
     .line = lexer.current_line
   };
 
