@@ -15,18 +15,18 @@ void check_for_equal_tokens(token_t expected, token_t actual) {
             expected.line, actual.line);
 
   const char *expected_token_type, *actual_token_type;
-  switch(expected.token_type) {
+  switch(expected.token_kind) {
     #define X(tt) case tt: expected_token_type = #tt; break;
-    LIST_TOKEN_TYPES
+    LIST_TOKEN_KINDS
     #undef X
   } 
-  switch(actual.token_type) {
+  switch(actual.token_kind) {
     #define X(tt) case tt: actual_token_type = #tt; break;
-    LIST_TOKEN_TYPES
+    LIST_TOKEN_KINDS
     #undef X
   }
 
-  cr_assert(expected.token_type == actual.token_type,
+  cr_assert(expected.token_kind == actual.token_kind,
             "Expected token of type '%s', got '%s'.",
             expected_token_type,
             actual_token_type
@@ -91,52 +91,52 @@ Test(lexer_testing, source_code1) {
 
   token_t expected_tokens[] = {
     (token_t) {
-      .token_type = TOKEN_FUNC,
+      .token_kind = TOKEN_FUNC,
       .lexeme = str_view_from("func"),
       .line = 1,
     },
     (token_t) {
-      .token_type = TOKEN_ID,
+      .token_kind = TOKEN_ID,
       .lexeme = str_view_from("main"),
       .line = 1,
     },
     (token_t) {
-      .token_type = TOKEN_LPAREN,
+      .token_kind = TOKEN_LPAREN,
       .lexeme = str_view_from("("),
       .line = 1,
     },
     (token_t) {
-      .token_type = TOKEN_RPAREN,
+      .token_kind = TOKEN_RPAREN,
       .lexeme = str_view_from(")"),
       .line = 1,
     },
     (token_t) {
-      .token_type = TOKEN_LBRACE,
+      .token_kind = TOKEN_LBRACE,
       .lexeme = str_view_from("{"),
       .line = 1,
     },
     (token_t) {
-      .token_type = TOKEN_ID,
+      .token_kind = TOKEN_ID,
       .lexeme = str_view_from("x"),
       .line = 2,
     },
     (token_t) {
-      .token_type = TOKEN_COLON,
+      .token_kind = TOKEN_COLON,
       .lexeme = str_view_from(":"),
       .line = 2,
     },
     (token_t) {
-      .token_type = TOKEN_ID,
+      .token_kind = TOKEN_ID,
       .lexeme = str_view_from("int"),
       .line = 2,
     },
     (token_t) {
-      .token_type = TOKEN_EQUAL,
+      .token_kind = TOKEN_EQUAL,
       .lexeme = str_view_from("="),
       .line = 2,
     },
     (token_t) {
-      .token_type = TOKEN_NUM,
+      .token_kind = TOKEN_NUM,
       .lexeme = str_view_from("2"),
       .literal = {
         .data = { .as_int = 2 },
@@ -145,12 +145,12 @@ Test(lexer_testing, source_code1) {
       .line = 2,
     },
     (token_t) {
-      .token_type = TOKEN_PLUS,
+      .token_kind = TOKEN_PLUS,
       .lexeme = str_view_from("+"),
       .line = 2,
     },
     (token_t) {
-      .token_type = TOKEN_NUM,
+      .token_kind = TOKEN_NUM,
       .lexeme = str_view_from("3"),
       .literal = {
         .data = { .as_int = 3 },
@@ -159,17 +159,17 @@ Test(lexer_testing, source_code1) {
       .line = 2,
     },
     (token_t) {
-      .token_type = TOKEN_SEMICOLON,
+      .token_kind = TOKEN_SEMICOLON,
       .lexeme = str_view_from(";"),
       .line = 2,
     },
     (token_t) {
-      .token_type = TOKEN_RBRACE,
+      .token_kind = TOKEN_RBRACE,
       .lexeme = str_view_from("}"),
       .line = 3,
     },
     (token_t) {
-      .token_type = TOKEN_EOF,
+      .token_kind = TOKEN_EOF,
       .lexeme = str_view_from(""),
       .line = 3,
     }

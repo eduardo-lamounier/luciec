@@ -5,7 +5,7 @@
 
 #include "types.h"
 
-#define LIST_TOKEN_TYPES                                                       \
+#define LIST_TOKEN_KINDS                                                       \
   X(TOKEN_LPAREN) X(TOKEN_RPAREN)                                              \
   X(TOKEN_LBRACE) X(TOKEN_RBRACE)                                              \
   X(TOKEN_COMMA) X(TOKEN_SEMICOLON) X(TOKEN_COLON)                             \
@@ -41,12 +41,12 @@
 
 typedef enum {
   #define X(tt) tt,
-  LIST_TOKEN_TYPES
+  LIST_TOKEN_KINDS
   #undef X
-} token_type_t;
+} token_kind_t;
 
 typedef struct {
-  token_type_t token_type;
+  token_kind_t token_kind;
   string_view_t lexeme;
   value_t literal; 
   size_t line;
@@ -58,7 +58,7 @@ typedef struct {
   const bool had_errors;
 } tokenized_source_t;
 
-#define is_literal(t) ((t).token_type == TOKEN_NUM || (t).token_type == TOKEN_STR)
+#define is_literal(t) ((t).token_kind == TOKEN_NUM || (t).token_kind == TOKEN_STR)
 
 #define null_literal() (value_t) { .type = TNULL }
 

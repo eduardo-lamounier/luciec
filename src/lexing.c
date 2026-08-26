@@ -131,7 +131,7 @@ static bool check_for_string_literal(token_t *const token, const char *lexeme,
     return true;
   }
 
-  token->token_type = TOKEN_STR;
+  token->token_kind = TOKEN_STR;
   token->literal = (value_t){
       .type = TSTR,
       .data.as_str =
@@ -155,7 +155,7 @@ static bool check_for_number_literal(token_t *const token, char current_chr,
   if(!isdigit(current_chr))
     return false;
 
-  token->token_type = TOKEN_NUM;
+  token->token_kind = TOKEN_NUM;
   for (; isdigit(peek(lexer)); advance(lexer));
 
   bool is_number_decimal = false;
@@ -190,34 +190,34 @@ static bool check_for_number_literal(token_t *const token, char current_chr,
 // A string view to the token's lexeme must be specified.
 static bool check_for_keywords(token_t *const token, string_view_t lexeme_view) {
   if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_NULL])) {
-    token->token_type = TOKEN_NULL; return true;
+    token->token_kind = TOKEN_NULL; return true;
   }
   if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_FALSE])) {
-    token->token_type = TOKEN_FALSE; return true;
+    token->token_kind = TOKEN_FALSE; return true;
   }
   if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_TRUE])) {
-    token->token_type = TOKEN_TRUE; return true;
+    token->token_kind = TOKEN_TRUE; return true;
   }
   if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_IF])) {
-    token->token_type = TOKEN_IF; return true;
+    token->token_kind = TOKEN_IF; return true;
   }
   if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_ELSE])) {
-    token->token_type = TOKEN_ELSE; return true;
+    token->token_kind = TOKEN_ELSE; return true;
   }
   if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_WHILE])) {
-    token->token_type = TOKEN_WHILE; return true;
+    token->token_kind = TOKEN_WHILE; return true;
   }
   if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_FOR])) {
-    token->token_type = TOKEN_FOR; return true;
+    token->token_kind = TOKEN_FOR; return true;
   }
   if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_FUNC])) {
-    token->token_type = TOKEN_FUNC; return true;
+    token->token_kind = TOKEN_FUNC; return true;
   }
   if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_RETURN])) {
-    token->token_type = TOKEN_RETURN; return true;
+    token->token_kind = TOKEN_RETURN; return true;
   }
   if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_USING])) {
-    token->token_type = TOKEN_USING; return true;
+    token->token_kind = TOKEN_USING; return true;
   }
 
   return false;
@@ -243,74 +243,74 @@ static void scan_token(lexer_t *const lexer, token_t *const token_out) {
 
   switch (current_chr) {
     case '(':
-      token.token_type = TOKEN_LPAREN; break;
+      token.token_kind = TOKEN_LPAREN; break;
     case ')':
-      token.token_type = TOKEN_RPAREN; break;
+      token.token_kind = TOKEN_RPAREN; break;
     case '{':
-      token.token_type = TOKEN_LBRACE; break;
+      token.token_kind = TOKEN_LBRACE; break;
     case '}':
-      token.token_type = TOKEN_RBRACE; break;
+      token.token_kind = TOKEN_RBRACE; break;
     case ',':
-      token.token_type = TOKEN_COMMA; break;
+      token.token_kind = TOKEN_COMMA; break;
     case ';':
-      token.token_type = TOKEN_SEMICOLON; break;
+      token.token_kind = TOKEN_SEMICOLON; break;
     case ':':
-      token.token_type = TOKEN_COLON; break;
+      token.token_kind = TOKEN_COLON; break;
     case '+':
-      token.token_type = TOKEN_PLUS; break;
+      token.token_kind = TOKEN_PLUS; break;
     case '-':
-      token.token_type = TOKEN_MINUS; break;
+      token.token_kind = TOKEN_MINUS; break;
     case '*':
-      token.token_type = TOKEN_STAR; break;
+      token.token_kind = TOKEN_STAR; break;
     case '/':
-      token.token_type = TOKEN_SLASH; break;
+      token.token_kind = TOKEN_SLASH; break;
     case '&':
       if(peek(lexer) != '&') {
-        token.token_type = TOKEN_AMP; break;
+        token.token_kind = TOKEN_AMP; break;
       }
 
       advance(lexer);
-      token.token_type = TOKEN_AMP_AMP; break;
+      token.token_kind = TOKEN_AMP_AMP; break;
     case '|':
       if(peek(lexer) != '|') {
-        token.token_type = TOKEN_PIPE; break;
+        token.token_kind = TOKEN_PIPE; break;
       }
 
       advance(lexer);
-      token.token_type = TOKEN_PIPE_PIPE; break;
+      token.token_kind = TOKEN_PIPE_PIPE; break;
     case '!':
       if(peek(lexer) != '=') {
-        token.token_type = TOKEN_BANG; break;
+        token.token_kind = TOKEN_BANG; break;
       }
 
       advance(lexer);
-      token.token_type = TOKEN_BANG_EQUAL; break;
+      token.token_kind = TOKEN_BANG_EQUAL; break;
     case '=':
       switch(peek(lexer)) {
         case '=':
           advance(lexer);
-          token.token_type = TOKEN_EQUAL_EQUAL; break;
+          token.token_kind = TOKEN_EQUAL_EQUAL; break;
         case '>':
           advance(lexer);
-          token.token_type = TOKEN_EQUAL_GREATER; break;
+          token.token_kind = TOKEN_EQUAL_GREATER; break;
         default:
-          token.token_type = TOKEN_EQUAL; break;
+          token.token_kind = TOKEN_EQUAL; break;
       }
       break;
     case '<':
       if(peek(lexer) != '=') {
-        token.token_type = TOKEN_LESS; break;
+        token.token_kind = TOKEN_LESS; break;
       }
 
       advance(lexer);
-      token.token_type = TOKEN_LESS_EQUAL; break;
+      token.token_kind = TOKEN_LESS_EQUAL; break;
     case '>':
       if(peek(lexer) != '=') {
-        token.token_type = TOKEN_GREATER; break;
+        token.token_kind = TOKEN_GREATER; break;
       }
 
       advance(lexer);
-      token.token_type = TOKEN_GREATER_EQUAL; break;
+      token.token_kind = TOKEN_GREATER_EQUAL; break;
     default:
       if(check_for_string_literal(&token, lexeme, start, lexer))
          break;
@@ -326,7 +326,7 @@ static void scan_token(lexer_t *const lexer, token_t *const token_out) {
         for(; isalnum(peek(lexer)); advance(lexer));
       }
 
-      token.token_type = TOKEN_ID;
+      token.token_kind = TOKEN_ID;
 
       if(check_for_keywords(
         &token, 
@@ -418,7 +418,7 @@ tokenized_source_t tokenize_source(const char *const source, const size_t source
   }
 
   token_t EOF_token = {
-    .token_type = TOKEN_EOF,
+    .token_kind = TOKEN_EOF,
     .lexeme = str_view_from(token_lexemes[TOKEN_EOF]),
     .line = lexer.current_line
   };

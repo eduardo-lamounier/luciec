@@ -22,8 +22,8 @@ static inline const token_t *peek(const parser_t *parser) {
   return parser->input_tokens + parser->current;
 }
 
-static inline bool matches(parser_t *parser, token_type_t token_type) {
-  return peek(parser)->token_type == token_type;
+static inline bool matches(parser_t *parser, token_kind_t token_kind) {
+  return peek(parser)->token_kind == token_kind;
 }
 
 static inline void advance(parser_t *parser) {
@@ -40,11 +40,11 @@ static inline void parser_report_at(parser_t *parser,
   va_end(args);
 }
 
-static bool expect(parser_t *parser, token_type_t token_type) {
-  if(!matches(parser, token_type)) {
+static bool expect(parser_t *parser, token_kind_t token_kind) {
+  if(!matches(parser, token_kind)) {
     size_t line = peek(parser)->line;
     string_view_t actual = peek(parser)->lexeme;
-    const char *expected = token_lexemes[token_type];
+    const char *expected = token_lexemes[token_kind];
 
     if(expected != NULL) {
       parser_report_at(parser, line, "Expected '%s', got '" str_view_FMT "'.\n",
@@ -53,7 +53,7 @@ static bool expect(parser_t *parser, token_type_t token_type) {
     }
 
     // Token is a literal
-    switch (token_type) {
+    switch (token_kind) {
       case TOKEN_ID:
         expected = "an indentifier";
         break;
@@ -85,7 +85,7 @@ static void synchronize(parser_t *parser) {
       return;
     }
 
-    switch(peek(parser)->token_type) {
+    switch(peek(parser)->token_kind) {
       case TOKEN_FUNC:
       case TOKEN_IF:
       case TOKEN_WHILE:
