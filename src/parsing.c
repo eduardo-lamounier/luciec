@@ -341,8 +341,13 @@ static void add_AST(parser_t *parser, expr_t *AST) {
 
 
 
+expr_t *const *parser_ASTs(const parser_t *parser) {
+  assert(parser != NULL);
+  return parser->ASTs;
+}
+
 expr_t *parser_AST(const parser_t *parser, size_t idx) {
-  assert(idx < parser->ASTs_amount);
+  assert(parser != NULL && idx < parser->ASTs_amount);
   return parser->ASTs[idx];
 }
 

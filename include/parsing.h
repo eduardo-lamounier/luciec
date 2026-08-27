@@ -42,6 +42,8 @@ struct expr {
 
 typedef struct parser parser_t;
 
+expr_t *const *parser_ASTs(const parser_t *parser);
+
 expr_t *parser_AST(const parser_t *parser, size_t idx);
 
 size_t parser_ASTs_amount(const parser_t *parser);
