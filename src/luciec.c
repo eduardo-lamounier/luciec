@@ -7,8 +7,7 @@
 
 #include "platform.h"
 #include "logging.h"
-#include "lexing.h"
-#include "parsing.h"
+#include "checking.h"
 
 #define VERSION_MESSAGE "luciec 1.0.0v"
 #define HELP_MESSAGE "Usage: luciec [OPTIONS] file...\n"                       \
@@ -188,8 +187,18 @@ int main(int argc, char **argv) {
     puts(HAD_ERRORS_MESSAGE); return EXIT_FAILURE;
   }
 
-  expr_t *AST = parser_AST(parser, 0);
-  show_AST(AST);
+  expr_t *const *ASTs = parser_ASTs(parser);
+  size_t ASTs_amount = parser_ASTs_amount(parser);
+
+  checker_t *checker = checker_new(ASTs, ASTs_amount);
+
+  check_ASTs(checker);
+
+  if(checker_had_errors(checker)) {
+    puts(HAD_ERRORS_MESSAGE); return EXIT_FAILURE;
+  }
+
+  show_AST(parser_AST(parser, 0));
 
   parser_destroy(parser);
 

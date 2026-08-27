@@ -23,6 +23,7 @@ add_executable( luciec
   src/logging.c
   src/lexing.c
   src/parsing.c
+  src/checking.c
   ${PLATFORM_SOURCES}
 )
 
