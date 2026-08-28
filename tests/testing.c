@@ -81,6 +81,28 @@ void check_for_equal_tokens(token_t expected, token_t actual) {
   } 
 }
 
+#define tok(tk, l) (token_t) {                                                 \
+    .token_kind = (tk),                                                        \
+    .lexeme = str_view_from(token_lexemes[tk]),                                \
+    .line = (l),                                                               \
+  }
+
+#define id_tok(lex, l) (token_t) {                                             \
+    .token_kind = TOKEN_ID,                                                    \
+    .lexeme = str_view_from(lex),                                              \
+    .line = (l),                                                               \
+  }
+
+#define num_tok(v, lex, l) (token_t) {                                         \
+    .token_kind = TOKEN_NUM,                                                   \
+    .lexeme = str_view_from(lex),                                              \
+    .literal = {                                                               \
+      .data = { .as_int = (v) },                                               \
+      .type = TINT,                                                            \
+    },                                                                         \
+    .line = (l),                                                               \
+  }
+
 Test(lexer_testing, source_code1) {
   char *source = "func main() {\n"
                  "  x: int = 2 + 3;\n"
@@ -90,89 +112,21 @@ Test(lexer_testing, source_code1) {
     tokenize_source(source, strlen(source));
 
   token_t expected_tokens[] = {
-    (token_t) {
-      .token_kind = TOKEN_FUNC,
-      .lexeme = str_view_from("func"),
-      .line = 1,
-    },
-    (token_t) {
-      .token_kind = TOKEN_ID,
-      .lexeme = str_view_from("main"),
-      .line = 1,
-    },
-    (token_t) {
-      .token_kind = TOKEN_LPAREN,
-      .lexeme = str_view_from("("),
-      .line = 1,
-    },
-    (token_t) {
-      .token_kind = TOKEN_RPAREN,
-      .lexeme = str_view_from(")"),
-      .line = 1,
-    },
-    (token_t) {
-      .token_kind = TOKEN_LBRACE,
-      .lexeme = str_view_from("{"),
-      .line = 1,
-    },
-    (token_t) {
-      .token_kind = TOKEN_ID,
-      .lexeme = str_view_from("x"),
-      .line = 2,
-    },
-    (token_t) {
-      .token_kind = TOKEN_COLON,
-      .lexeme = str_view_from(":"),
-      .line = 2,
-    },
-    (token_t) {
-      .token_kind = TOKEN_ID,
-      .lexeme = str_view_from("int"),
-      .line = 2,
-    },
-    (token_t) {
-      .token_kind = TOKEN_EQUAL,
-      .lexeme = str_view_from("="),
-      .line = 2,
-    },
-    (token_t) {
-      .token_kind = TOKEN_NUM,
-      .lexeme = str_view_from("2"),
-      .literal = {
-        .data = { .as_int = 2 },
-        .type = TINT,
-      },
-      .line = 2,
-    },
-    (token_t) {
-      .token_kind = TOKEN_PLUS,
-      .lexeme = str_view_from("+"),
-      .line = 2,
-    },
-    (token_t) {
-      .token_kind = TOKEN_NUM,
-      .lexeme = str_view_from("3"),
-      .literal = {
-        .data = { .as_int = 3 },
-        .type = TINT,
-      },
-      .line = 2,
-    },
-    (token_t) {
-      .token_kind = TOKEN_SEMICOLON,
-      .lexeme = str_view_from(";"),
-      .line = 2,
-    },
-    (token_t) {
-      .token_kind = TOKEN_RBRACE,
-      .lexeme = str_view_from("}"),
-      .line = 3,
-    },
-    (token_t) {
-      .token_kind = TOKEN_EOF,
-      .lexeme = str_view_from(""),
-      .line = 3,
-    }
+    tok(TOKEN_FUNC, 1),
+    id_tok("main", 1),
+    tok(TOKEN_LPAREN, 1),
+    tok(TOKEN_RPAREN, 1),
+    tok(TOKEN_LBRACE, 1),
+    id_tok("x", 2) ,
+    tok(TOKEN_COLON, 2),
+    id_tok("int", 2),
+    tok(TOKEN_EQUAL, 2),
+    num_tok(2, "2", 2),
+    tok(TOKEN_PLUS, 2),
+    num_tok(3, "3", 2),
+    tok(TOKEN_SEMICOLON, 2),
+    tok(TOKEN_RBRACE, 3),
+    tok(TOKEN_EOF, 3),
   };
 
   bool expected_error = false;
