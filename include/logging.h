@@ -3,6 +3,7 @@
 
 #include<stdlib.h>
 #include<stdarg.h>
+#include<assert.h>
 
 #define MEMORY_ALLOCATION_ERRMSG "The input file exceeds the processing" \
                                  " size limits of this application.\n\n"
