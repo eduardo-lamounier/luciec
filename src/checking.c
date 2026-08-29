@@ -22,6 +22,8 @@ struct checker {
   AST_type_t *AST_types;
 };
 
+// Returns, by reference, the type set to an AST.
+//
 // Returns NULL if the type wasn't annotaded for the specified AST
 static type_t *get_type_for_AST(checker_t *checker, const expr_t *AST) {
   AST_type_t *node = checker->AST_types;
@@ -36,7 +38,11 @@ static type_t *get_type_for_AST(checker_t *checker, const expr_t *AST) {
   return NULL;
 }
 
+// Sets a type to an AST.
+//
 // Returns NULL if it isn't possible to allocate memory for the type annotation
+//
+// Should NOT be used if a type has ALREADY been set to the specified AST.
 static type_t *add_type_for_AST(checker_t *checker,
                                 const expr_t *AST, type_t type) {
   static AST_type_t *tail = NULL;
@@ -74,6 +80,7 @@ static inline void advance(checker_t *checker) {
   checker->current++;
 }
 
+// Reports while updating the checker's inner error state.
 static inline void checker_report_at(checker_t *checker,
                                      size_t line, const char *fmt, ...) {
   checker->had_errors = true;
@@ -83,6 +90,7 @@ static inline void checker_report_at(checker_t *checker,
   va_end(args);
 }
 
+// Reports an unary operator not defined for some specific type.
 static inline void undef_unary_op(checker_t *checker, const token_t *op, 
                                   type_t type) {
   checker_report_at(checker, op->line,
@@ -90,6 +98,7 @@ static inline void undef_unary_op(checker_t *checker, const token_t *op,
                     op->lexeme, type_names[type]);
 }
 
+// Reports a binary operator not defined for some specific types.
 static inline void undef_binary_op(checker_t *checker, const token_t *op,
                                    const type_t types[2]) {
   checker_report_at(checker, 1,
@@ -126,9 +135,11 @@ void checker_destroy(checker_t *checker) {
   free(checker);
 }
 
-// Returns whether the minus operator is defined for the AST's operand's type.
+// Returns whether the minus unary operator is defined for the AST's operand's
+// type.
 //
-// If it isn't (when returning `false`), reports an error.
+// If it isn't (when returning `false`), reports an error; otherwise, the
+// type pointed by 'type_out' is updated.
 static bool check_minus_op(checker_t *checker, expr_t *AST, type_t *type_out) {
   assert(checker != NULL && AST != NULL && type_out != NULL);
 
@@ -153,6 +164,11 @@ static bool check_minus_op(checker_t *checker, expr_t *AST, type_t *type_out) {
   return false;
 }
 
+// Returns whether the bang unary operator is defined for the ASTs operand's
+// type.
+//
+// If it isn't (when returning `false`), reports an error; otherwise, the
+// type pointed by 'type_out' is updated.
 static bool check_bang_op(checker_t *checker, expr_t *AST, type_t *type_out) {
   assert(checker != NULL && AST != NULL && type_out != NULL);
 
@@ -172,7 +188,11 @@ static bool check_bang_op(checker_t *checker, expr_t *AST, type_t *type_out) {
   return false;
 }
 
+// Gets a common numeric type for two types.
+//
 // 'type_out' is an optional out parameter.
+//
+// Returns whether it exists a common type, and reports if it doesn't.
 static bool get_common_num_type(type_t type1, type_t type2, type_t *type_out) {
   assert(is_type_num(type1));
   assert(is_type_num(type2));
@@ -243,6 +263,11 @@ static bool get_common_num_type(type_t type1, type_t type2, type_t *type_out) {
   return false;
 }
 
+// Returns whether the arithmetic binary operators are defined for the AST's
+// operands's type.
+//
+// If it isn't (when returning `false`), reports an error; otherwise, the
+// type pointed by 'type_out' is updated. 
 static bool check_arithmetic_op(checker_t *checker, expr_t *AST, type_t *type_out) {
   assert(checker != NULL && AST != NULL && type_out != NULL);
 
@@ -264,6 +289,11 @@ static bool check_arithmetic_op(checker_t *checker, expr_t *AST, type_t *type_ou
   return false;
 }
 
+// Returns whether the comparsion binary operators are defined for the AST's
+// operands's type.
+//
+// If it isn't (when returning `false`), reports an error; otherwise, the
+// type pointed by 'type_out' is updated.
 static bool check_comparsion_op(checker_t *checker, expr_t *AST, type_t *type_out) {
   assert(checker != NULL && AST != NULL && type_out != NULL);
 
@@ -283,6 +313,11 @@ static bool check_comparsion_op(checker_t *checker, expr_t *AST, type_t *type_ou
   return false;
 }
 
+// Returns whether the equality binary operators are defined for the AST's
+// operands's type.
+//
+// If it isn't (when returning `false`), reports an error; otherwise, the
+// type pointed by 'type_out' is updated.
 static bool check_equality_op(checker_t *checker, expr_t *AST, type_t *type_out) {
   assert(checker != NULL && AST != NULL && type_out != NULL);
 
@@ -305,6 +340,7 @@ static bool check_equality_op(checker_t *checker, expr_t *AST, type_t *type_out)
   return false;
 }
 
+// Verifies the AST and all inner ASTs.
 static bool check_AST(checker_t *checker, expr_t *AST) {
   assert(checker != NULL && AST != NULL);
 
