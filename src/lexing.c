@@ -180,11 +180,23 @@ static bool check_for_number_literal(token_t *const token, char current_chr,
         .type = TDOUBLE,
         .data = {.as_double = str_view_todouble(lexeme_view)},
     };
-  else
-    token->literal = (value_t){
+  else {
+    lucie_int_t as_int = str_view_toint32(lexeme_view);
+    lucie_long_t as_long = str_view_toint64(lexeme_view);
+
+    if(as_long != as_int) {
+      // Overflow of the int, literal should be a long
+      token->literal = (value_t) {
+        .type = TLONG,
+        .data = { .as_long = as_long },
+      };
+    } else {
+      token->literal = (value_t) {
         .type = TINT,
-        .data = {.as_int = str_view_toint(lexeme_view)},
-    };
+        .data = { .as_int = as_int },
+      };
+    }
+  }
 
   return true;
 }
