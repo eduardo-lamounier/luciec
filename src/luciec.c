@@ -177,9 +177,8 @@ int main(int argc, char **argv) {
   
   parser_t *parser = parser_new(tokenized_source.read_tokens);
 
-  if(parser == NULL) {
-    puts(MEMORY_ALLOCATION_ERRMSG); return EXIT_FAILURE;
-  }
+  if(parser == NULL)
+    error(MEMORY_ALLOCATION_ERRMSG);
 
   parse_ASTs(parser);
 
@@ -191,6 +190,9 @@ int main(int argc, char **argv) {
   size_t ASTs_amount = parser_ASTs_amount(parser);
 
   checker_t *checker = checker_new(ASTs, ASTs_amount);
+
+  if(checker == NULL)
+    error(MEMORY_ALLOCATION_ERRMSG);
 
   check_ASTs(checker);
 
