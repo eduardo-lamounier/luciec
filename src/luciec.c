@@ -198,6 +198,7 @@ int main(int argc, char **argv) {
     puts(HAD_ERRORS_MESSAGE); return EXIT_FAILURE;
   }
 
+  checker_destroy(checker);
   show_AST(parser_AST(parser, 0));
 
   parser_destroy(parser);
