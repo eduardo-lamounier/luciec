@@ -108,8 +108,9 @@ Test(lexer_testing, source_code1) {
                  "  x: int = 2 + 3;\n"
                  "}";
 
-  tokenized_source_t res =
-    tokenize_source(source, strlen(source));
+  lexer_t *lexer = lexer_new(source, strlen(source));
+ 
+  lexer_scan_source(lexer);
 
   token_t expected_tokens[] = {
     tok(TOKEN_FUNC, 1),
@@ -130,11 +131,14 @@ Test(lexer_testing, source_code1) {
   };
 
   bool expected_error = false;
-  cr_assert_eq(expected_error, res.had_errors);
+  cr_assert_eq(expected_error, lexer_had_errors(lexer));
 
-  cr_assert_eq(res.read_tokens_amount, sizeof(expected_tokens) / sizeof(token_t));
+  const token_t *tokens = lexer_tokens(lexer);
+  size_t tokens_amount = lexer_tokens_amount(lexer);
 
-  for(size_t i = 0; i < res.read_tokens_amount; i++)
-    check_for_equal_tokens(expected_tokens[i], res.read_tokens[i]);
+  cr_assert_eq(tokens_amount, sizeof(expected_tokens) / sizeof(token_t));
+
+  for(size_t i = 0; i < tokens_amount; i++)
+    check_for_equal_tokens(expected_tokens[i], tokens[i]);
 }
 
