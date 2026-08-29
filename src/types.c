@@ -1,5 +1,18 @@
 #include "types.h"
 
+const char *type_names[] = {
+  [TINT]    = "int",
+  [TUINT]   = "uint",
+  [TFLOAT]  = "float",
+  [TDOUBLE] = "double",
+  [TLONG]   = "long",
+  [TULONG]  = "ulong",
+  [TCHAR]   = "char",
+  [TBOOL]   = "bool",
+  [TSTR]    = "str",
+  [TNULL]   = "null"
+};
+
 void value_print(value_t value) {
   switch(value.type) {
     case TINT:
@@ -21,6 +34,6 @@ void value_print(value_t value) {
     case TSTR:
       printf("\"" str_view_FMT "\"", str_view_ARG(value.data.as_str)); break;
     case TNULL:
-      printf("null"); break;
+      printf("(null)"); break;
   };
 }

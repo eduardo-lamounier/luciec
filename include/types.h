@@ -63,6 +63,8 @@ typedef struct {
   || t == TFLOAT || t == TDOUBLE                                       \
   )
 
+extern const char *type_names[];
+
 void value_print(value_t value);
 
 #endif
