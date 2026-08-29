@@ -52,11 +52,7 @@ typedef struct {
   size_t line;
 } token_t;
 
-typedef struct {
-  const size_t read_tokens_amount;
-  token_t *const read_tokens;
-  const bool had_errors;
-} tokenized_source_t;
+typedef struct lexer lexer_t;
 
 #define is_literal(t) ((t).token_kind == TOKEN_NUM || (t).token_kind == TOKEN_STR)
 
@@ -67,17 +63,18 @@ typedef struct {
   .data = { .as_bool = (v) },                                                  \
 }
 
-// Must be used to free the token and all dynamically allocated
-// fields inside
-void token_clear(token_t *const token);
+const token_t *lexer_tokens(const lexer_t *lexer);
 
-// The pointer 'read_tokens' (a field of the returned struct)
-// references the array containing all tokens in the source code,
-// and MUST BE FREED, because it's allocated dynamically
-//
+size_t lexer_tokens_amount(const lexer_t *lexer);
+
+bool lexer_had_errors(const lexer_t *lexer);
+
 // 'source_size' must be the source's string length
-tokenized_source_t tokenize_source(const char *const source_file,
-                                   const size_t source_size);
+lexer_t *lexer_new(const char *source, size_t source_size);
+
+void lexer_destroy(lexer_t *lexer);
+
+void lexer_scan_source(lexer_t *lexer);
 
 extern const char *token_lexemes[];
 

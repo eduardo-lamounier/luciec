@@ -168,14 +168,20 @@ int main(int argc, char **argv) {
 
   if(source == NULL)
     error(MEMORY_ALLOCATION_ERRMSG);
+  
+  lexer_t *lexer = lexer_new(source, source_size);
 
-  tokenized_source_t tokenized_source = tokenize_source(source, source_size);
+  if(lexer == NULL) {
+    puts(MEMORY_ALLOCATION_ERRMSG); return EXIT_FAILURE;
+  }
+
+  lexer_scan_source(lexer);
  
-  if(tokenized_source.had_errors) {
+  if(lexer_had_errors(lexer)) {
     puts(HAD_ERRORS_MESSAGE); return EXIT_FAILURE;
   }
   
-  parser_t *parser = parser_new(tokenized_source.read_tokens);
+  parser_t *parser = parser_new(lexer_tokens(lexer));
 
   if(parser == NULL)
     error(MEMORY_ALLOCATION_ERRMSG);
@@ -203,10 +209,10 @@ int main(int argc, char **argv) {
   checker_destroy(checker);
   show_AST(parser_AST(parser, 0));
 
+  lexer_destroy(lexer);
   parser_destroy(parser);
 
   free(source);
-  free(tokenized_source.read_tokens);
   return EXIT_SUCCESS;
 }
 

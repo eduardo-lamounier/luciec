@@ -1,7 +1,8 @@
 #include "parsing.h"
 
+#include<string.h>
+
 #include "logging.h"
-#define DYNAMIC_ARENA_IMPLEMENTATION
 #include "vendor/dynamic-arena.h"
 
 #define ASTS_INITIAL_CAPACITY 2
@@ -31,6 +32,7 @@ static inline void advance(parser_t *parser) {
     parser->current++;
 }
 
+// Reports an error while updating the parser's error state.
 static inline void parser_report_at(parser_t *parser,
                                    size_t line, const char *fmt, ...) {
   parser->had_errors = true;
@@ -40,15 +42,20 @@ static inline void parser_report_at(parser_t *parser,
   va_end(args);
 }
 
+// Reports if the current token isn't of the specified token kind.
+//
+// Consumes the token right afterwards in both cases.
 static bool expect(parser_t *parser, token_kind_t token_kind) {
   if(!matches(parser, token_kind)) {
     size_t line = peek(parser)->line;
     string_view_t actual = peek(parser)->lexeme;
     const char *expected = token_lexemes[token_kind];
 
+    // If token isn't a literal:
     if(expected != NULL) {
       parser_report_at(parser, line, "Expected '%s', got '" str_view_FMT "'.\n",
                        expected, str_view_ARG(actual));
+      advance(parser);
       return false;
     }
 
@@ -70,6 +77,8 @@ static bool expect(parser_t *parser, token_kind_t token_kind) {
 
     parser_report_at(parser, line, "Expected %s, got '" str_view_FMT "'.\n",
                      expected, str_view_ARG(actual));
+    advance(parser);
+    return false;
   }
 
   advance(parser);
@@ -171,6 +180,8 @@ static expr_t *new_binary_expr(dynamic_arena_t *arena, const token_t *operator,
   
   return expr;
 }
+
+// Recursive descent parsing algorithm:
 
 static expr_t *primary(parser_t *parser);
 static expr_t *unary(parser_t *parser);
@@ -320,11 +331,18 @@ static expr_t *expression(parser_t *parser) {
 
 // Returns `true` if the parsing occurred successfully, returns `false`
 // otherwise.
+//
+// If the parsing is successfull, the pointer referenced by 'AST_out'
+// starts pointing to the parsed AST.
 static bool parse_AST(parser_t *parser, expr_t **AST_out) {
   *AST_out = expression(parser);
   return *AST_out != NULL;
 }
 
+// Adds an AST to the inner ASTs dynamic array.
+//
+// Terminates the program with an error message if it isn't possible to
+// allocate memory for the new AST.
 static void add_AST(parser_t *parser, expr_t *AST) {
   if(parser->ASTs_amount + 1 > parser->ASTs_capacity) {
     parser->ASTs_capacity *= 1.5;
@@ -412,6 +430,7 @@ void parse_ASTs(parser_t *parser) {
     add_AST(parser, AST);
 }
 
+// Recursively prints an AST.
 static void _show_AST(const expr_t *expr, bool put_space) {
   assert(expr != NULL);
   

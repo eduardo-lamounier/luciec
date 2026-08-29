@@ -1,5 +1,5 @@
 /* Library copied from the repository: https://github.com/eduardo-lamounier/c-utils
- * Code at the commit e6862a3 [branch main].
+ * Code at the commit 711a2dd [branch main].
  *
  * Updating the code requires manually copying the file from this repository
  * into here.
@@ -17,6 +17,7 @@
 #ifndef STRING_VIEW_H
 #define STRING_VIEW_H
 
+#include<stdlib.h>
 #include<stdio.h>
 #include<stdbool.h>
 
@@ -64,6 +65,11 @@ void str_view_trim_right(string_view_t *view);
 //
 // If the string is invalid (e.g. "hello"), 0 is returned.
 int str_view_toint(string_view_t view);
+
+// Converts the content of a string view to a long integer.
+//
+// If the string is invalid (e.g. "hello"), 0 is returned.
+long str_view_tolong(string_view_t view);
 
 // Converts the content of a string view to a double.
 //
@@ -146,7 +152,7 @@ void str_view_trim_right(string_view_t *view) {
   chop_right(view, count);
 }
 
-int str_view_toint(string_view_t view) {
+int32_t str_view_toint32(string_view_t view) {
   if(view.data == NULL || view.length == 0)
     return 0;
 
@@ -154,7 +160,18 @@ int str_view_toint(string_view_t view) {
   memcpy(temp, view.data, view.length);
   temp[view.length] = '\0';
 
-  return atoi(temp);
+  return atol(temp);
+}
+
+int64_t str_view_toint64(string_view_t view) {
+  if(view.data == NULL || view.length == 0)
+    return 0;
+
+  char temp[view.length+1];
+  memcpy(temp, view.data, view.length);
+  temp[view.length] = '\0';
+
+  return atoll(temp);
 }
 
 double str_view_todouble(string_view_t view) {
