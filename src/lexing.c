@@ -6,11 +6,13 @@
 #include <stdlib.h>
 
 #include "logging.h"
+#define DYNAMIC_ARENA_IMPLEMENTATION
+#include "vendor/dynamic-arena.h"
 
 // Stores the lexemes for all non-literals
 //
 // Lexemes for literals are NULL
-const char *token_lexemes[TOKEN_EOF+1] = {
+const char *token_lexemes[] = {
   [TOKEN_LPAREN] = "(", [TOKEN_RPAREN] = ")",
   [TOKEN_LBRACE] = "{", [TOKEN_RBRACE] = "}",
   [TOKEN_COMMA] = ",", [TOKEN_SEMICOLON] = ";", [TOKEN_COLON] = ":",
@@ -41,15 +43,19 @@ const char *token_lexemes[TOKEN_EOF+1] = {
   [TOKEN_EOF] = "<EOF>",
 };
 
-typedef struct {
+struct lexer {
+  dynamic_arena_t *arena;
+
   bool had_errors;
-  const char *const source;
+  const char *source;
   size_t source_size;
   size_t current;
   size_t current_line;
+
   size_t read_tokens_amount;
+  size_t capacity; // capacity for the tokens array
   token_t *read_tokens;
-} lexer_t;
+};
 
 // Gets the character in the current cursor position
 static inline char peek(const lexer_t *const lexer) {
@@ -89,15 +95,17 @@ static inline void advance_by(lexer_t *const lexer, const size_t n) {
 // The current capacity of the tokens array is passed by reference
 // with 'capacity_for_tokens' and will change if the array is
 // reallocated.
-static void add_token(lexer_t *const lexer,
-                      const token_t token,
-                      size_t *const capacity_for_tokens) {
+static void add_token(lexer_t *lexer,
+                      const token_t token) {
   // expands if necessary
-  if(lexer->read_tokens_amount + 1 > *capacity_for_tokens) {
-    *capacity_for_tokens *= 1.5;
-    lexer->read_tokens = (token_t *)realloc(
-      lexer->read_tokens,*capacity_for_tokens * sizeof(token_t)
+  if(lexer->read_tokens_amount + 1 > lexer->capacity) {
+    token_t *temp = lexer->read_tokens;
+    lexer->capacity *= 1.5;
+    lexer->read_tokens = (token_t *)dy_arena_alloc(
+      lexer->arena, lexer->capacity, sizeof(token_t)
     );
+
+    memcpy(lexer->read_tokens, temp, lexer->capacity * sizeof(token_t));
 
     if (lexer->read_tokens == NULL)
       error(MEMORY_ALLOCATION_ERRMSG);
@@ -341,94 +349,119 @@ static void scan_token(lexer_t *const lexer, token_t *const token_out) {
   *token_out = token;
 }
 
-tokenized_source_t tokenize_source(const char *const source, const size_t source_size) {
-  size_t capacity = 2; // MUST be 2 (or greater), otherwise `capacity *= 1.5`
-                       // might not expand the array when necessary
-  lexer_t lexer = {
-    .had_errors = false,
+bool lexer_had_errors(const lexer_t *lexer) {
+  return lexer->had_errors;
+}
+
+const token_t *lexer_tokens(const lexer_t *lexer) {
+  return lexer->read_tokens;
+}
+
+size_t lexer_tokens_amount(const lexer_t *lexer) {
+  return lexer->read_tokens_amount;
+}
+
+lexer_t *lexer_new(const char *source, size_t source_size) {
+  assert(source != NULL);
+
+  lexer_t *lexer = calloc(1, sizeof(lexer_t)); 
+
+  if(lexer == NULL)
+    return NULL;
+
+  *lexer = (lexer_t) {
+    .arena = dy_arena_new(256 * sizeof(token_t)),
     .source = source,
     .source_size = source_size,
-    .current = 0,
     .current_line = 1,
-    .read_tokens = (token_t *)malloc(capacity * sizeof(token_t)),
-    .read_tokens_amount = 0
+    .read_tokens = (token_t *)malloc(2 * sizeof(token_t)),
+    .capacity = 2, // MUST be 2 (or greater), otherwise `capacity *= 1.5`
+                   // might not expand the array when necessary
   };
 
-  if (lexer.read_tokens == NULL)
+  if(lexer->arena == NULL) {
+    free(lexer);
+    return NULL;
+  }
+
+  return lexer;
+}
+
+void lexer_destroy(lexer_t *lexer) {
+  dy_arena_destroy(&lexer->arena);
+  free(lexer);
+}
+
+void lexer_scan_source(lexer_t *lexer) {
+  if (lexer->read_tokens == NULL)
     error(MEMORY_ALLOCATION_ERRMSG);
 
   bool in_comment_block = false;
-  for (; peek(&lexer) != '\0';) {
+  for (; peek(lexer) != '\0';) {
     // New line
-    if(peek(&lexer) == '\n') {
-      advance(&lexer);
-      lexer.current_line++;
+    if(peek(lexer) == '\n') {
+      advance(lexer);
+      lexer->current_line++;
       continue;
     }
 
     // Skip whitespaces:
-    if(peek(&lexer) == ' ' || peek(&lexer) == '\t'
-      || peek(&lexer) == '\r') {
-      advance(&lexer);
+    if(peek(lexer) == ' ' || peek(lexer) == '\t'
+      || peek(lexer) == '\r') {
+      advance(lexer);
       continue;
     }
 
-    if (strcmp(peek_ptr(&lexer), "*/") == 0) {
+    if (strcmp(peek_ptr(lexer), "*/") == 0) {
       if (!in_comment_block) {
-        report_at(lexer.current_line,"'*/' doesn't have a corresponding '/*'.\n");
-        lexer.had_errors = true;
+        report_at(lexer->current_line,"'*/' doesn't have a corresponding '/*'.\n");
+        lexer->had_errors = true;
       }
 
       in_comment_block = false;
-      advance_by(&lexer, 2);
+      advance_by(lexer, 2);
       continue;
     }
 
-    if (strcmp(peek_ptr(&lexer), "//") == 0) {
+    if (strcmp(peek_ptr(lexer), "//") == 0) {
       if(in_comment_block) {
-        warn_at(lexer.current_line, "'//' inside a comment block. "
+        warn_at(lexer->current_line, "'//' inside a comment block. "
                 "Did you mean to close the block with '*/'?\n");
-        advance_by(&lexer, 2);
+        advance_by(lexer, 2);
         continue;
       }
 
-      for(; peek(&lexer) != '\n' && peek(&lexer) != '\0';
-        advance(&lexer));
+      for(; peek(lexer) != '\n' && peek(lexer) != '\0';
+        advance(lexer));
       continue;
     }
 
-    if (strcmp(peek_ptr(&lexer), "/*") == 0) {
+    if (strcmp(peek_ptr(lexer), "/*") == 0) {
       if (in_comment_block)
-        warn_at(lexer.current_line, "'/*' inside a comment block. "
+        warn_at(lexer->current_line, "'/*' inside a comment block. "
                 "Did you mean to close it with '*/'?\n");
 
       in_comment_block = true;
-      advance_by(&lexer, 2);
+      advance_by(lexer, 2);
       continue;
     }
 
     if(in_comment_block) {
-      advance(&lexer);
+      advance(lexer);
       continue;
     }
 
     token_t token;
-    scan_token(&lexer, &token);
-    add_token(&lexer, token, &capacity);
+    scan_token(lexer, &token);
+    add_token(lexer, token);
   }
 
   token_t EOF_token = {
     .token_kind = TOKEN_EOF,
     .lexeme = str_view_from(token_lexemes[TOKEN_EOF]),
-    .line = lexer.current_line
+    .line = lexer->current_line
   };
 
-  add_token(&lexer, EOF_token, &capacity);
-
-  return (tokenized_source_t) {
-    .read_tokens = lexer.read_tokens,
-    .read_tokens_amount = lexer.read_tokens_amount,
-    .had_errors = lexer.had_errors
-  };
+  add_token(lexer, EOF_token);
 }
 

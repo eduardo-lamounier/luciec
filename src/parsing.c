@@ -1,7 +1,6 @@
 #include "parsing.h"
 
 #include "logging.h"
-#define DYNAMIC_ARENA_IMPLEMENTATION
 #include "vendor/dynamic-arena.h"
 
 #define ASTS_INITIAL_CAPACITY 2
