@@ -42,22 +42,33 @@ struct expr {
 
 typedef struct parser parser_t;
 
+
+// Returns all the parsed ASTs.
 expr_t *const *parser_ASTs(const parser_t *parser);
 
+// Returns a parsed AST at a specific index.
 expr_t *parser_AST(const parser_t *parser, size_t idx);
 
+// Returns the amount of parsed ASTs.
 size_t parser_ASTs_amount(const parser_t *parser);
 
+// Returns whether a compilation error occurred in parsing.
 bool parser_had_errors(const parser_t *parser);
 
 
+// Creates a new parser. Its resources have to be released with
+// 'parser_destroy(...)'.
 parser_t *parser_new(const token_t *tokens);
 
+// Releases all resources within a parser. The pointer to the parser becomes
+// invalid.
 void parser_destroy(parser_t *parser);
 
 
+// Prints an AST to the screen.
 void show_AST(const expr_t *AST);
 
+// Passes through all specified tokens and returns the ASTs.
 void parse_ASTs(parser_t *parser);
 
 #endif
