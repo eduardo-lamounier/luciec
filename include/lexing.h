@@ -36,6 +36,8 @@
   X(TOKEN_FUNC)                                                                \
   X(TOKEN_RETURN)                                                              \
   X(TOKEN_USING)                                                               \
+  X(TOKEN_PRINT)                                                               \
+  X(TOKEN_PRINTLN)                                                             \
                                                                                \
   X(TOKEN_EOF)
 

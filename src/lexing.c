@@ -39,6 +39,8 @@ const char *token_lexemes[] = {
   [TOKEN_FUNC] = "func",
   [TOKEN_RETURN] = "return",
   [TOKEN_USING] = "using",
+  [TOKEN_PRINT] = "print",
+  [TOKEN_PRINTLN] = "println",
 
   [TOKEN_EOF] = "<EOF>",
 };
@@ -238,6 +240,12 @@ static bool check_for_keywords(token_t *const token, string_view_t lexeme_view) 
   }
   if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_USING])) {
     token->token_kind = TOKEN_USING; return true;
+  }
+  if (str_view_equals_cstr(lexeme_view, token_lexemes[TOKEN_PRINT])) {
+    token->token_kind = TOKEN_PRINT; return true;
+  }
+  if (str_view_equals_cstr((lexeme_view), token_lexemes[TOKEN_PRINTLN])) {
+    token->token_kind = TOKEN_PRINTLN; return true;
   }
 
   return false;
