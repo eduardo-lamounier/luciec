@@ -181,6 +181,27 @@ static expr_t *new_binary_expr(dynamic_arena_t *arena, const token_t *operator,
   return expr;
 }
 
+static expr_t *new_print_expr(dynamic_arena_t *arena, expr_t *expr_to_print,
+                              bool with_newline) {
+  assert(arena != NULL && expr_to_print != NULL);
+  expr_t *expr = dy_arena_alloc(arena, 1, sizeof(expr_t));
+
+  if(expr == NULL)
+    error(MEMORY_ALLOCATION_ERRMSG);
+
+  *expr = (expr_t) {
+    .expr_kind = EXPR_PRINT,
+    .val = {
+      .as_print = {
+        .expr_to_print = expr_to_print,
+        .with_newline = with_newline,
+      }
+    }
+  };
+
+  return expr;
+}
+
 // Recursive descent parsing algorithm:
 
 static expr_t *primary(parser_t *parser);
@@ -329,13 +350,48 @@ static expr_t *expression(parser_t *parser) {
   return equality(parser);
 }
 
+static expr_t *print(parser_t *parser) {
+  if(!matches(parser, TOKEN_PRINT) && !matches(parser, TOKEN_PRINTLN)) {
+    parser_report_at(
+      parser, 
+      peek(parser)->line,
+      "Expected 'print' or 'println', got '" str_view_FMT "'.",
+      str_view_ARG(peek(parser)->lexeme)
+    );
+    return NULL;
+  }
+
+  const token_t *print_tok = peek(parser);
+  advance(parser); 
+  expr_t *expr = expression(parser);
+
+  if(expr == NULL)
+    return NULL;
+
+  if(expr->expr_kind != EXPR_GROUPING) {
+    parser_report_at(
+      parser,
+      peek(parser)->line,
+      "Expected expression inside parentheses for '" str_view_FMT "(...)'.",
+      str_view_ARG(peek(parser)->lexeme)
+    );
+    return NULL;
+  }
+
+  return new_print_expr(
+    parser->arena, 
+    expr->val.as_grouping.inner_expr, 
+    print_tok->token_kind == TOKEN_PRINTLN
+  );
+}
+
 // Returns `true` if the parsing occurred successfully, returns `false`
 // otherwise.
 //
 // If the parsing is successfull, the pointer referenced by 'AST_out'
 // starts pointing to the parsed AST.
 static bool parse_AST(parser_t *parser, expr_t **AST_out) {
-  *AST_out = expression(parser);
+  *AST_out = print(parser);
   return *AST_out != NULL;
 }
 
@@ -455,8 +511,17 @@ static void _show_AST(const expr_t *expr, bool put_space) {
     case EXPR_LITERAL:
       value_print(expr->val.as_literal.data);
       break;
+    case EXPR_PRINT:
+      if(expr->val.as_print.with_newline)
+        printf("println( ");
+      else
+        printf("print( ");
+
+      _show_AST(expr->val.as_print.expr_to_print, true);
+      printf(")");
+      break;
     default:
-      assert(false); // Should not get into here
+      unreachable();
   }
 
   if(put_space)
