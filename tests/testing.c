@@ -33,8 +33,9 @@ void check_for_equal_tokens(token_t expected, token_t actual) {
             actual_token_type
   );
 
-  if(!is_literal(expected))
+  if(!is_literal(expected)) {
     return;
+  }
 
   cr_expect(expected.literal.kind == actual.literal.kind);
 

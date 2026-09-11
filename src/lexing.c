@@ -145,8 +145,9 @@ static void add_token(lexer_t *lexer,
 
     memcpy(lexer->read_tokens, temp, lexer->capacity * sizeof(token_t));
 
-    if (lexer->read_tokens == NULL)
+    if (lexer->read_tokens == NULL) {
       error(MEMORY_ALLOCATION_ERRMSG);
+    }
   }
 
   lexer->read_tokens[lexer->read_tokens_amount++] = token;
@@ -163,13 +164,16 @@ static void add_token(lexer_t *lexer,
 static bool check_for_string_literal(token_t *const token, const char *lexeme,
                                      const size_t lexeme_start,
                                      lexer_t *const lexer) {
-  if(lexer->source[lexeme_start] != '\"')
+  if(lexer->source[lexeme_start] != '\"') {
     return false;
+  }
 
   advance(lexer);
-  for(; peek(lexer) != '\"' && peek(lexer) != '\0'; advance(lexer))
-    if(peek(lexer) == '\n')
+  for(; peek(lexer) != '\"' && peek(lexer) != '\0'; advance(lexer)) {
+    if(peek(lexer) == '\n') {
       lexer->current_line++;
+    }
+  }
 
   if(peek(lexer) == '\0') {
     lexer->had_errors = true;
@@ -178,7 +182,7 @@ static bool check_for_string_literal(token_t *const token, const char *lexeme,
   }
 
   token->token_kind = TOKEN_STR;
-  token->literal = (literal_t){
+  token->literal = (literal_t) {
       .kind = LITERAL_STR,
       .value = { .as_str =
         str_view_new(lexeme + 1, lexer->current - lexeme_start + 1 - 2)
@@ -199,8 +203,9 @@ static bool check_for_string_literal(token_t *const token, const char *lexeme,
 static bool check_for_number_literal(token_t *const token, char current_chr,
                                      const char *lexeme, size_t lexeme_start,
                                      lexer_t *const lexer) {
-  if(!isdigit(current_chr))
+  if(!isdigit(current_chr)) {
     return false;
+  }
 
   token->token_kind = TOKEN_NUM;
   for (; isdigit(peek(lexer)); advance(lexer));
@@ -214,12 +219,12 @@ static bool check_for_number_literal(token_t *const token, char current_chr,
 
   string_view_t lexeme_view = str_view_new(lexeme, lexer->current - lexeme_start);
 
-  if (is_number_decimal)
+  if (is_number_decimal) {
     token->literal = (literal_t){
         .kind = LITERAL_DOUBLE,
         .value = { .as_double = str_view_todouble(lexeme_view) },
     };
-  else {
+  } else {
     int32_t as_int = str_view_toint32(lexeme_view);
     int64_t as_long = str_view_toint64(lexeme_view);
 
@@ -377,13 +382,15 @@ static void scan_token(lexer_t *const lexer, token_t *const token_out) {
       advance(lexer);
       token.token_kind = TOKEN_GREATER_EQUAL; break;
     default:
-      if(check_for_string_literal(&token, lexeme, start, lexer))
-         break;
+      if(check_for_string_literal(&token, lexeme, start, lexer)) {
+        break;
+      }
 
       // Number literal
       if(check_for_number_literal(&token, current_chr, lexeme,
-                                  start, lexer))
+                                  start, lexer)) {
         break;
+      }
 
       // Indentifier
       if(isalpha(peek(lexer))) {
@@ -396,8 +403,9 @@ static void scan_token(lexer_t *const lexer, token_t *const token_out) {
       if(check_for_keywords(
         &token, 
         str_view_new(lexeme, lexer->current - start))
-      )
+      ) {
         break;
+      }
 
       // If the lexeme doesn't match with any keyword, it's an indentifier
   }
@@ -423,8 +431,9 @@ lexer_t *lexer_new(const char *source, size_t source_size) {
 
   lexer_t *lexer = calloc(1, sizeof(lexer_t)); 
 
-  if(lexer == NULL)
+  if(lexer == NULL) {
     return NULL;
+  }
 
   *lexer = (lexer_t) {
     .arena = dy_arena_new(256 * sizeof(token_t)),
@@ -450,8 +459,9 @@ void lexer_destroy(lexer_t *lexer) {
 }
 
 void lexer_scan_source(lexer_t *lexer) {
-  if (lexer->read_tokens == NULL)
+  if (lexer->read_tokens == NULL) {
     error(MEMORY_ALLOCATION_ERRMSG);
+  }
 
   bool in_comment_block = false;
   for (; peek(lexer) != '\0';) {
@@ -494,9 +504,10 @@ void lexer_scan_source(lexer_t *lexer) {
     }
 
     if (strcmp(peek_ptr(lexer), "/*") == 0) {
-      if (in_comment_block)
+      if (in_comment_block) {
         warn_at(lexer->current_line, "'/*' inside a comment block. "
                 "Did you mean to close it with '*/'?\n");
+      }
 
       in_comment_block = true;
       advance_by(lexer, 2);
