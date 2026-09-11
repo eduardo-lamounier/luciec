@@ -29,8 +29,9 @@ static type_t *get_type_for_AST(checker_t *checker, const expr_t *AST) {
   AST_type_t *node = checker->AST_types;
 
   while(node != NULL) {
-    if(node->AST == AST)
+    if(node->AST == AST) {
       return &node->type;
+    }
 
     node = node->next;
   }
@@ -50,8 +51,9 @@ static type_t *add_type_for_AST(checker_t *checker,
   AST_type_t *node =
     dy_arena_alloc(checker->arena, 1, sizeof(AST_type_t));
   
-  if(node == NULL)
+  if(node == NULL) {
     error(MEMORY_ALLOCATION_ERRMSG);
+  }
 
   node->AST = AST;
   node->type = type;
@@ -115,8 +117,9 @@ bool checker_had_errors(const checker_t *checker) {
 checker_t *checker_new(expr_t *const *ASTs, size_t ASTs_amount) {
   checker_t *checker = calloc(1, sizeof(checker_t));
 
-  if(checker == NULL)
+  if(checker == NULL) {
     return NULL;
+  }
 
   checker->arena = dy_arena_new(256 * sizeof(AST_type_t));
 
@@ -200,8 +203,9 @@ static bool get_common_num_type(type_t type1, type_t type2, type_t *type_out) {
   // ensures 'type' points to something:
   type_t dummy; 
   type_t *type = &dummy;
-  if(type_out != NULL)
+  if(type_out != NULL) {
     type = type_out;
+  }
 
 
   if(type1 == TDOUBLE || type2 == TDOUBLE) {
@@ -281,8 +285,9 @@ static bool check_arithmetic_op(checker_t *checker, expr_t *AST, type_t *type_ou
   if(
     is_type_num(operand_types[0]) && is_type_num(operand_types[1]) &&
     get_common_num_type(operand_types[0], operand_types[1], type_out)
-  )
+  ) {
     return true;
+  }
 
   const token_t *op = AST->val.as_binary.operator;
   undef_binary_op(checker, op, operand_types);
@@ -304,7 +309,8 @@ static bool check_comparsion_op(checker_t *checker, expr_t *AST, type_t *type_ou
 
   if(
     is_type_num(operand_types[0]) && is_type_num(operand_types[1]) &&
-    get_common_num_type(operand_types[0], operand_types[1], NULL)) {
+    get_common_num_type(operand_types[0], operand_types[1], NULL)
+  ) {
     *type_out = TBOOL; return true;
   }
 
@@ -330,10 +336,11 @@ static bool check_equality_op(checker_t *checker, expr_t *AST, type_t *type_out)
     *type_out = TBOOL; return true;
   }
 
-  if(is_type_num(operand_types[0]) && is_type_num(operand_types[1]))
+  if(is_type_num(operand_types[0]) && is_type_num(operand_types[1])) {
     if(get_common_num_type(operand_types[0], operand_types[1], NULL)) {
       *type_out = TBOOL; return true;
     }
+  }
 
   const token_t *op = AST->val.as_binary.operator;
   undef_binary_op(checker, op, operand_types);
@@ -351,53 +358,62 @@ static bool check_AST(checker_t *checker, expr_t *AST) {
       type = AST->val.as_literal.data.type;
       break;
     case EXPR_GROUPING:
-      if(!check_AST(checker, AST->val.as_grouping.inner_expr))
+      if(!check_AST(checker, AST->val.as_grouping.inner_expr)) {
         return false;
+      }
 
       type = checker_AST_type(checker, AST->val.as_grouping.inner_expr);
       break;
     case EXPR_UNARY:
-      if(!check_AST(checker, AST->val.as_unary.operand))
+      if(!check_AST(checker, AST->val.as_unary.operand)) {
         return false;
+      }
       
       switch(AST->val.as_unary.operator->token_kind) {
         case TOKEN_MINUS:
-          if(!check_minus_op(checker, AST->val.as_unary.operand, &type))
+          if(!check_minus_op(checker, AST->val.as_unary.operand, &type)) {
             return false;
+          }
           break;
         case TOKEN_BANG:
-          if(!check_bang_op(checker, AST->val.as_unary.operand, &type))
+          if(!check_bang_op(checker, AST->val.as_unary.operand, &type)) {
             return false;
+          }
           break;
         default:
           unreachable();
       }
       break;
     case EXPR_BINARY:
-      if(!check_AST(checker, AST->val.as_binary.operands[0]))
+      if(!check_AST(checker, AST->val.as_binary.operands[0])) {
         return false;
-      if(!check_AST(checker, AST->val.as_binary.operands[1]))
+      }
+      if(!check_AST(checker, AST->val.as_binary.operands[1])) {
         return false;
+      }
 
       switch(AST->val.as_binary.operator->token_kind) {
         case TOKEN_PLUS:
         case TOKEN_MINUS:
         case TOKEN_STAR:
         case TOKEN_SLASH:
-          if(!check_arithmetic_op(checker, AST, &type))
+          if(!check_arithmetic_op(checker, AST, &type)) {
             return false;
+          }
           break;
         case TOKEN_GREATER:
         case TOKEN_LESS:
         case TOKEN_GREATER_EQUAL:
         case TOKEN_LESS_EQUAL:
-          if(!check_comparsion_op(checker, AST, &type))
+          if(!check_comparsion_op(checker, AST, &type)) {
             return false;
+          }
           break;
         case TOKEN_EQUAL_EQUAL:
         case TOKEN_BANG_EQUAL:
-          if(!check_equality_op(checker, AST, &type))
+          if(!check_equality_op(checker, AST, &type)) {
             return false;
+          }
           break;
         default:
           unreachable();

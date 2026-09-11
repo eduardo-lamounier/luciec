@@ -10,6 +10,7 @@ typedef enum {
   EXPR_BINARY,
   EXPR_LITERAL,
   EXPR_GROUPING,
+  EXPR_PRINT,
 } expr_kind_t;
 
 typedef struct {
@@ -23,12 +24,17 @@ typedef struct {
 } binary_expr_t;
 
 typedef struct {
-  value_t data;
+  literal_t data;
 } literal_expr_t;
 
 typedef struct {
   expr_t *inner_expr;
 } group_expr_t;
+
+typedef struct {
+  expr_t *expr_to_print;
+  bool with_newline;
+} print_expr_t;
 
 struct expr { 
   union {
@@ -36,6 +42,7 @@ struct expr {
     binary_expr_t as_binary;
     literal_expr_t as_literal;
     group_expr_t as_grouping;
+    print_expr_t as_print;
   } val;
   expr_kind_t expr_kind;
 };

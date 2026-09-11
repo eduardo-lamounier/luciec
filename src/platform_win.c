@@ -13,8 +13,9 @@ const char *file_name_from_path(const char *path) {
   const char *b = strrchr(path, '\\');
 
   // No slash in the path: the entry's name is the path itself
-  if(a == NULL && b == NULL)
+  if(a == NULL && b == NULL) {
     return path;
+  }
   
   // The string after the last slash character is the entry's name
   return a == NULL || ((b != NULL) && (uintptr_t)b > (uintptr_t)a) ? b+1 : a+1;
