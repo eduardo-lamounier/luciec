@@ -112,7 +112,7 @@ static expr_t *new_grouping_expr(dynamic_arena_t *arena, expr_t *sub_expr) {
   return expr;
 }
 
-static expr_t *new_literal_expr(dynamic_arena_t *arena, value_t value) {
+static expr_t *new_literal_expr(dynamic_arena_t *arena, literal_t literal) {
   assert(arena != NULL);
   expr_t *expr = dy_arena_alloc(arena, 1, sizeof(expr_t));
 
@@ -121,7 +121,7 @@ static expr_t *new_literal_expr(dynamic_arena_t *arena, value_t value) {
 
   *expr = (expr_t) {
     .expr_kind = EXPR_LITERAL,
-    .val = { .as_literal = { .data = value } },
+    .val = { .as_literal = { .data = literal } },
   };
 
   return expr;
@@ -196,7 +196,7 @@ static expr_t *primary(parser_t *parser) {
   }
 
   if(matches(parser, TOKEN_NUM) || matches(parser, TOKEN_STR)) {
-    value_t literal = peek(parser)->literal;
+    literal_t literal = peek(parser)->literal;
     advance(parser);
     return new_literal_expr(parser->arena, literal);
   }
@@ -428,7 +428,7 @@ static void _show_AST(const expr_t *expr, bool put_space) {
       printf(")");
       break;
     case EXPR_LITERAL:
-      value_print(expr->val.as_literal.data);
+      print_literal(expr->val.as_literal.data);
       break;
     default:
       assert(false); // Should not get into here

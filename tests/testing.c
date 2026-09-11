@@ -2,6 +2,7 @@
 #include<criterion/assert.h>
 
 #include "lexing.h"
+#include "logging.h"
 
 void check_for_equal_tokens(token_t expected, token_t actual) {
   cr_expect(
@@ -27,7 +28,7 @@ void check_for_equal_tokens(token_t expected, token_t actual) {
   }
 
   cr_assert(expected.token_kind == actual.token_kind,
-            "Expected token of type '%s', got '%s'.",
+            "Expected token of kind '%s', got '%s'.",
             expected_token_type,
             actual_token_type
   );
@@ -35,49 +36,49 @@ void check_for_equal_tokens(token_t expected, token_t actual) {
   if(!is_literal(expected))
     return;
 
-  cr_expect(expected.literal.type == actual.literal.type);
+  cr_expect(expected.literal.kind == actual.literal.kind);
 
-  switch (expected.literal.type) {
-    case TINT:
-      cr_expect(expected.literal.data.as_int == actual.literal.data.as_int,
+  switch (expected.literal.kind) {
+    case LITERAL_INT:
+      cr_expect(expected.literal.value.as_int == actual.literal.value.as_int,
                 "Expected a literal value of %d, got %d.",
-                expected.literal.data.as_int, actual.literal.data.as_int
+                expected.literal.value.as_int, actual.literal.value.as_int
       );
       break;
-    case TDOUBLE:
-      cr_expect(expected.literal.data.as_double == actual.literal.data.as_double,
+    case LITERAL_DOUBLE:
+      cr_expect(expected.literal.value.as_double == actual.literal.value.as_double,
+                "Expected a literal value of %lf, got %lf.",
+                expected.literal.value.as_double, actual.literal.value.as_double
+      );
+      break;
+    case LITERAL_FLOAT:
+      cr_expect(expected.literal.value.as_float == actual.literal.value.as_float,
                 "Expected a literal value of %f, got %f.",
-                expected.literal.data.as_double, actual.literal.data.as_double
+                expected.literal.value.as_float, actual.literal.value.as_float
       );
       break;
-    case TFLOAT:
-      cr_expect(expected.literal.data.as_float == actual.literal.data.as_float,
-                "Expected a literal value of %f, got %f.",
-                expected.literal.data.as_float, actual.literal.data.as_float
-      );
-      break;
-    case TCHAR:
-      cr_expect(expected.literal.data.as_char == actual.literal.data.as_char,
+    case LITERAL_CHAR:
+      cr_expect(expected.literal.value.as_char == actual.literal.value.as_char,
                 "Expected a literal value of '%c', got '%c'.",
-                expected.literal.data.as_char, actual.literal.data.as_char
+                expected.literal.value.as_char, actual.literal.value.as_char
       );
       break;
-    case TSTR:
-      cr_expect(str_view_equals(expected.literal.data.as_str, actual.literal.data.as_str),
+    case LITERAL_STR:
+      cr_expect(str_view_equals(expected.literal.value.as_str, actual.literal.value.as_str),
                 "Expected a literal value of \"" str_view_FMT "\", got \"" str_view_FMT "\".",
-                str_view_ARG(expected.literal.data.as_str),
-                str_view_ARG(actual.literal.data.as_str)
+                str_view_ARG(expected.literal.value.as_str),
+                str_view_ARG(actual.literal.value.as_str)
       );
       break;
-    case TBOOL:
-      cr_expect(expected.literal.data.as_bool == actual.literal.data.as_bool,
+    case LITERAL_BOOL:
+      cr_expect(expected.literal.value.as_bool == actual.literal.value.as_bool,
                 "Expected a literal value of '%s', got '%s'.",
-                (expected.literal.data.as_bool ? "true" : "false"),
-                (actual.literal.data.as_bool ? "true" : "false")
+                (expected.literal.value.as_bool ? "true" : "false"),
+                (actual.literal.value.as_bool ? "true" : "false")
       );
       break;
     default:
-      cr_expect(false, "Should not get into here");
+      unreachable();
   } 
 }
 
@@ -97,8 +98,8 @@ void check_for_equal_tokens(token_t expected, token_t actual) {
     .token_kind = TOKEN_NUM,                                                   \
     .lexeme = str_view_from(lex),                                              \
     .literal = {                                                               \
-      .data = { .as_int = (v) },                                               \
-      .type = TINT,                                                            \
+      .value = { .as_int = (v) },                                              \
+      .kind = LITERAL_INT,                                                     \
     },                                                                         \
     .line = (l),                                                               \
   }

@@ -4,10 +4,19 @@
 #include<string.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include<inttypes.h>
 
 #include "logging.h"
 #define DYNAMIC_ARENA_IMPLEMENTATION
 #include "vendor/dynamic-arena.h"
+
+const char *literal_FMTs[] = {
+  [LITERAL_INT] = ("%" PRId32), [LITERAL_UINT] = ("%" PRIu32),
+  [LITERAL_LONG] = ("%" PRId64), [LITERAL_ULONG] = ("%" PRIu64),
+  [LITERAL_FLOAT] = "%f", [LITERAL_DOUBLE] = "%lf",
+  [LITERAL_CHAR] = "%c",
+  [LITERAL_STR] = str_view_FMT,
+};
 
 // Stores the lexemes for all non-literals
 //
@@ -58,6 +67,33 @@ struct lexer {
   size_t capacity; // capacity for the tokens array
   token_t *read_tokens;
 };
+
+
+void print_literal(literal_t literal) {
+  switch(literal.kind) {
+    case LITERAL_INT:
+      printf(literal_FMTs[LITERAL_INT], literal.value.as_int); break;
+    case LITERAL_UINT:
+      printf(literal_FMTs[LITERAL_UINT], literal.value.as_uint); break;
+    case LITERAL_FLOAT:
+      printf(literal_FMTs[LITERAL_FLOAT], literal.value.as_float); break;
+    case LITERAL_DOUBLE:
+      printf(literal_FMTs[LITERAL_DOUBLE], literal.value.as_double); break;
+    case LITERAL_LONG:
+      printf(literal_FMTs[LITERAL_LONG], literal.value.as_long); break;
+    case LITERAL_ULONG:
+      printf(literal_FMTs[LITERAL_ULONG], literal.value.as_ulong); break;
+    case LITERAL_CHAR:
+      printf(literal_FMTs[LITERAL_CHAR], literal.value.as_char); break;
+    case LITERAL_BOOL:
+      printf(literal.value.as_bool ? "true" : "false"); break;
+    case LITERAL_STR:
+      printf("\"" str_view_FMT "\"", str_view_ARG(literal.value.as_str)); break;
+    case LITERAL_NULL:
+      printf("null"); break;
+  };
+}
+
 
 // Gets the character in the current cursor position
 static inline char peek(const lexer_t *const lexer) {
@@ -142,10 +178,11 @@ static bool check_for_string_literal(token_t *const token, const char *lexeme,
   }
 
   token->token_kind = TOKEN_STR;
-  token->literal = (value_t){
-      .type = TSTR,
-      .data.as_str =
-          str_view_new(lexeme + 1, lexer->current - lexeme_start + 1 - 2),
+  token->literal = (literal_t){
+      .kind = LITERAL_STR,
+      .value = { .as_str =
+        str_view_new(lexeme + 1, lexer->current - lexeme_start + 1 - 2)
+      },
   };
   advance(lexer);
   return true;
@@ -178,24 +215,24 @@ static bool check_for_number_literal(token_t *const token, char current_chr,
   string_view_t lexeme_view = str_view_new(lexeme, lexer->current - lexeme_start);
 
   if (is_number_decimal)
-    token->literal = (value_t){
-        .type = TDOUBLE,
-        .data = {.as_double = str_view_todouble(lexeme_view)},
+    token->literal = (literal_t){
+        .kind = LITERAL_DOUBLE,
+        .value = { .as_double = str_view_todouble(lexeme_view) },
     };
   else {
-    lucie_int_t as_int = str_view_toint32(lexeme_view);
-    lucie_long_t as_long = str_view_toint64(lexeme_view);
+    int32_t as_int = str_view_toint32(lexeme_view);
+    int64_t as_long = str_view_toint64(lexeme_view);
 
     if(as_long != as_int) {
       // Overflow of the int, literal should be a long
-      token->literal = (value_t) {
-        .type = TLONG,
-        .data = { .as_long = as_long },
+      token->literal = (literal_t) {
+        .kind = LITERAL_LONG,
+        .value = { .as_long = as_long },
       };
     } else {
-      token->literal = (value_t) {
-        .type = TINT,
-        .data = { .as_int = as_int },
+      token->literal = (literal_t) {
+        .kind = LITERAL_INT,
+        .value = { .as_int = as_int },
       };
     }
   }
