@@ -28,8 +28,9 @@ static inline bool matches(parser_t *parser, token_kind_t token_kind) {
 }
 
 static inline void advance(parser_t *parser) {
-  if(!matches(parser, TOKEN_EOF))
+  if(!matches(parser, TOKEN_EOF)) {
     parser->current++;
+  }
 }
 
 // Reports an error while updating the parser's error state.
@@ -111,8 +112,9 @@ static expr_t *new_grouping_expr(dynamic_arena_t *arena, expr_t *sub_expr) {
   assert(arena != NULL);
   expr_t *expr = dy_arena_alloc(arena, 1, sizeof(expr_t));
 
-  if(expr == NULL)
+  if(expr == NULL) {
     error(MEMORY_ALLOCATION_ERRMSG);
+  }
 
   *expr = (expr_t) {
     .expr_kind = EXPR_GROUPING,
@@ -122,16 +124,17 @@ static expr_t *new_grouping_expr(dynamic_arena_t *arena, expr_t *sub_expr) {
   return expr;
 }
 
-static expr_t *new_literal_expr(dynamic_arena_t *arena, value_t value) {
+static expr_t *new_literal_expr(dynamic_arena_t *arena, literal_t literal) {
   assert(arena != NULL);
   expr_t *expr = dy_arena_alloc(arena, 1, sizeof(expr_t));
 
-  if(expr == NULL)
+  if(expr == NULL) {
     error(MEMORY_ALLOCATION_ERRMSG);
+  }
 
   *expr = (expr_t) {
     .expr_kind = EXPR_LITERAL,
-    .val = { .as_literal = { .data = value } },
+    .val = { .as_literal = { .data = literal } },
   };
 
   return expr;
@@ -142,8 +145,9 @@ static expr_t *new_unary_expr(dynamic_arena_t *arena, const token_t *operator,
   assert(arena != NULL && operator != NULL && operand != NULL);
   expr_t *expr = dy_arena_alloc(arena, 1, sizeof(expr_t));
 
-  if(expr == NULL)
+  if(expr == NULL) {
     error(MEMORY_ALLOCATION_ERRMSG);
+  }
 
   *expr = (expr_t) {
     .expr_kind = EXPR_UNARY,
@@ -165,8 +169,9 @@ static expr_t *new_binary_expr(dynamic_arena_t *arena, const token_t *operator,
          && left_operand != NULL && right_operand != NULL);
   expr_t *expr = dy_arena_alloc(arena, 1, sizeof(expr_t));
 
-  if(expr == NULL)
+  if(expr == NULL) {
     error(MEMORY_ALLOCATION_ERRMSG);
+  }
 
   *expr = (expr_t) {
     .expr_kind = EXPR_BINARY,
@@ -229,7 +234,7 @@ static expr_t *primary(parser_t *parser) {
   }
 
   if(matches(parser, TOKEN_NUM) || matches(parser, TOKEN_STR)) {
-    value_t literal = peek(parser)->literal;
+    literal_t literal = peek(parser)->literal;
     advance(parser);
     return new_literal_expr(parser->arena, literal);
   }
@@ -253,8 +258,9 @@ static expr_t *unary(parser_t *parser) {
     advance(parser);
     expr_t *operand = unary(parser);
 
-    if(operand == NULL)
+    if(operand == NULL) {
       return NULL;
+    }
 
     return new_unary_expr(parser->arena, operator, operand);
   }
@@ -265,8 +271,9 @@ static expr_t *unary(parser_t *parser) {
 static expr_t *factor(parser_t *parser) {
   expr_t *AST = unary(parser);
 
-  if(AST == NULL)
+  if(AST == NULL) {
     return NULL;
+  }
 
   while(matches(parser, TOKEN_STAR) || matches(parser, TOKEN_SLASH)) {
     const token_t *operator = peek(parser);
@@ -285,16 +292,18 @@ static expr_t *factor(parser_t *parser) {
 static expr_t *term(parser_t *parser) {
   expr_t *AST = factor(parser);
 
-  if(AST == NULL)
+  if(AST == NULL) {
     return NULL;
+  }
 
   while(matches(parser, TOKEN_PLUS) || matches(parser, TOKEN_MINUS)) {
     const token_t *operator = peek(parser);
     advance(parser);
     expr_t *right_operand = factor(parser);
 
-    if(right_operand == NULL)
+    if(right_operand == NULL) {
       return NULL;
+    }
 
     AST = new_binary_expr(parser->arena, operator, AST, right_operand);
   }
@@ -305,8 +314,9 @@ static expr_t *term(parser_t *parser) {
 static expr_t *comparison(parser_t *parser) {
   expr_t *AST = term(parser);
 
-  if(AST == NULL)
+  if(AST == NULL) {
     return NULL;
+  }
 
   while(matches(parser, TOKEN_LESS)
         || matches(parser, TOKEN_LESS_EQUAL)
@@ -316,8 +326,9 @@ static expr_t *comparison(parser_t *parser) {
     advance(parser);
     expr_t *right_operand = term(parser);
 
-    if(right_operand == NULL)
+    if(right_operand == NULL) {
       return NULL;
+    }
     
     AST = new_binary_expr(parser->arena, operator, AST, right_operand);
   }
@@ -328,8 +339,9 @@ static expr_t *comparison(parser_t *parser) {
 static expr_t *equality(parser_t *parser) {
   expr_t *AST = comparison(parser);
 
-  if(AST == NULL)
+  if(AST == NULL) {
     return NULL;
+  }
 
   while(matches(parser, TOKEN_EQUAL_EQUAL)
         || matches(parser, TOKEN_BANG_EQUAL)) {     
@@ -337,8 +349,9 @@ static expr_t *equality(parser_t *parser) {
     advance(parser);
     expr_t *right_operand = comparison(parser);
 
-    if(right_operand == NULL)
+    if(right_operand == NULL) {
       return NULL;
+    }
 
     AST = new_binary_expr(parser->arena, operator, AST, right_operand);
   }
@@ -406,8 +419,9 @@ static void add_AST(parser_t *parser, expr_t *AST) {
       parser->ASTs, parser->ASTs_capacity * sizeof(expr_t*)
     );
 
-    if(parser->ASTs == NULL)
+    if(parser->ASTs == NULL) {
       error(MEMORY_ALLOCATION_ERRMSG);
+    }
   }
 
   parser->ASTs[parser->ASTs_amount++] = AST;
@@ -436,8 +450,9 @@ bool parser_had_errors(const parser_t *parser) {
 parser_t *parser_new(const token_t *tokens) {
   parser_t *parser = malloc(sizeof(parser_t));
 
-  if(parser == NULL)
+  if(parser == NULL) {
     return NULL;
+  }
 
   *parser = (parser_t) {
     .arena = dy_arena_new(256 * sizeof(expr_t)),
@@ -451,8 +466,9 @@ parser_t *parser_new(const token_t *tokens) {
   };
 
   if(parser->arena == NULL) {
-    if(parser->ASTs != NULL)
+    if(parser->ASTs != NULL) {
       free(parser->ASTs);
+    }
 
     free(parser);
     parser = NULL;
@@ -460,8 +476,9 @@ parser_t *parser_new(const token_t *tokens) {
   }
 
   if(parser->ASTs == NULL) {
-    if(parser->arena != NULL)
+    if(parser->arena != NULL) {
       free(parser->arena);
+    }
 
     free(parser);
     return NULL;
@@ -482,8 +499,9 @@ void parse_ASTs(parser_t *parser) {
  
   // TODO: Parse multiple ASTs
   expr_t *AST;
-  if(parse_AST(parser, &AST))
+  if(parse_AST(parser, &AST)) {
     add_AST(parser, AST);
+  }
 }
 
 // Recursively prints an AST.
@@ -509,7 +527,7 @@ static void _show_AST(const expr_t *expr, bool put_space) {
       printf(")");
       break;
     case EXPR_LITERAL:
-      value_print(expr->val.as_literal.data);
+      print_literal(expr->val.as_literal.data);
       break;
     case EXPR_PRINT:
       if(expr->val.as_print.with_newline)
@@ -524,8 +542,9 @@ static void _show_AST(const expr_t *expr, bool put_space) {
       unreachable();
   }
 
-  if(put_space)
+  if(put_space) {
     printf(" ");
+  }
 }
 
 void show_AST(const expr_t *AST) {

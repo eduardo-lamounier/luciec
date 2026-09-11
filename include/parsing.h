@@ -24,7 +24,7 @@ typedef struct {
 } binary_expr_t;
 
 typedef struct {
-  value_t data;
+  literal_t data;
 } literal_expr_t;
 
 typedef struct {
